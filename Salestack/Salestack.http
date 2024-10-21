@@ -1,0 +1,6 @@
+@Salestack_HostAddress = http://localhost:5252
+
+GET {{Salestack_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
