@@ -19,4 +19,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapGet("api/test", () => $"API IS RUNNING! {DateTime.UtcNow}.");
+
 app.Run();
