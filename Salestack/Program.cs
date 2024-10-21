@@ -1,4 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using Salestack.Data.Context;
+
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetSection("ConnectionStrings")
+                                            .GetValue<string>("SalestackDbConnectionString");
+
+builder.Services.AddDbContext<SalestackDbContext>(options =>
+{
+    options.UseNpgsql(connectionString);
+});
 
 builder.Services.AddControllers();
 
