@@ -1,4 +1,14 @@
 services:
+  database:
+    container_name: salestack_db
+    image: postgres:15-bullseye
+    ports:
+    - 5432:5432
+    environment:
+        - POSTGRES_USER=jradmin
+        - POSTGRES_PASSWORD=12345678
+        - POSTGRES_DB=SalestackDb
+
   salestack:
     container_name: salestack_api
     image: ${DOCKER_REGISTRY-}salestack
