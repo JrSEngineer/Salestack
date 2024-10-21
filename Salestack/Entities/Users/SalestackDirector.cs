@@ -1,4 +1,5 @@
-﻿using Salestack.Enums;
+﻿using Salestack.Entities.Company;
+using Salestack.Enums;
 
 namespace Salestack.Entities.Users;
 
@@ -10,4 +11,6 @@ public class SalestackDirector : SalestackBaseUser
     string email,
     string phoneNumber,
     CompanyOccupation occupation) : base(id, name, email, phoneNumber, occupation) { }
+
+    public Guid CompanyId { get; set; }
 }
