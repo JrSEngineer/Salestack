@@ -42,4 +42,48 @@ public class DirectorsController : ControllerBase
 
         return Ok(directors);
     }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetDirectorByIdAsync(Guid id)
+    {
+        var selectedDirector = await _context.Director
+            .AsNoTracking()
+            .Include(d => d.Company)
+            .FirstOrDefaultAsync(d => d.Id == id);
+
+        if (selectedDirector == null) return NotFound(new { Message = $"Director with id {id} not found." });
+
+        return Ok(selectedDirector);
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> UpdateDirectorAsync(Guid id, SalestackDirector data)
+    {
+        var selectedDirector = await _context.Director.FindAsync(id);
+
+        if (selectedDirector == null)
+            return NotFound(new { Message = $"Director with id {id} not found." });
+
+        selectedDirector.Name = data.Name;
+        selectedDirector.Email = data.Email;
+        selectedDirector.PhoneNumber = data.PhoneNumber;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(selectedDirector);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteDirectorAsync(Guid id)
+    {
+        var selectedDirector = await _context.Director.FindAsync(id);
+
+        if (selectedDirector == null)
+            return NotFound(new { Message = $"Director with id {id} not found." });
+
+        _context.Director.Remove(selectedDirector);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }

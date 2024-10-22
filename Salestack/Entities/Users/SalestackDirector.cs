@@ -1,6 +1,5 @@
 ﻿using Salestack.Entities.Company;
 using Salestack.Enums;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Salestack.Entities.Users;
