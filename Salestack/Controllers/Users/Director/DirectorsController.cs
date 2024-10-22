@@ -24,7 +24,9 @@ public class DirectorsController : ControllerBase
             data.Name,
             data.Email,
             data.PhoneNumber,
-            data.Occupation);
+            data.Occupation,
+            data.CompanyId
+            );
 
         await _context.Director.AddAsync(newDirector);
 

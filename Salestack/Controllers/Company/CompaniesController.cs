@@ -24,7 +24,8 @@ public class CompaniesController : ControllerBase
             Id = Guid.NewGuid(),
             Name = data.Name,
             Cnpj = data.Cnpj,
-            CompanyCode = data.CompanyCode
+            CompanyCode = data.CompanyCode,
+            PhoneNumber = data.PhoneNumber
         };
 
         await _context.Company.AddAsync(newCompany);
@@ -37,7 +38,8 @@ public class CompaniesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllCompaniesAsync()
     {
-        var companies = await _context.Company.ToListAsync();
+        var companies = await _context.Company
+            .Include(c => c.Director).ToListAsync();
 
         return Ok(companies);
     }
