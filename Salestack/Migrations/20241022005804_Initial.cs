@@ -12,19 +12,19 @@ namespace Salestack.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Director",
+                name: "Company",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
+                    CompanyCode = table.Column<string>(type: "text", nullable: false),
+                    Cnpj = table.Column<string>(type: "text", nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
-                    Occupation = table.Column<int>(type: "integer", nullable: false)
+                    DirectorId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Director", x => x.Id);
+                    table.PrimaryKey("PK_Company", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -59,37 +59,39 @@ namespace Salestack.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Company",
+                name: "Director",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    CompanyCode = table.Column<string>(type: "text", nullable: false),
-                    Cnpj = table.Column<string>(type: "text", nullable: false),
-                    phoneNumber = table.Column<string>(type: "text", nullable: false),
-                    DirectorId = table.Column<Guid>(type: "uuid", nullable: true)
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: false),
+                    Occupation = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Company", x => x.Id);
+                    table.PrimaryKey("PK_Director", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Company_Director_DirectorId",
-                        column: x => x.DirectorId,
-                        principalTable: "Director",
-                        principalColumn: "Id");
+                        name: "FK_Director_Company_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Company",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Company_DirectorId",
-                table: "Company",
-                column: "DirectorId");
+                name: "IX_Director_CompanyId",
+                table: "Director",
+                column: "CompanyId",
+                unique: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Company");
+                name: "Director");
 
             migrationBuilder.DropTable(
                 name: "Manager");
@@ -98,7 +100,7 @@ namespace Salestack.Migrations
                 name: "Seller");
 
             migrationBuilder.DropTable(
-                name: "Director");
+                name: "Company");
         }
     }
 }

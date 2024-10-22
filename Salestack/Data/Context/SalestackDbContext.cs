@@ -13,9 +13,15 @@ namespace Salestack.Data.Context
             if (pendingMigrationsFound) this.Database.Migrate();
         }
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.Entity<SalestackDirector>()
+                   .HasIndex(d => d.CompanyId).IsUnique();
+        }
+
         public DbSet<SalestackCompany> Company { get; set; }
-        public DbSet<SalestackSeller> Seller {  get; set; }
-        public DbSet<SalestackManager> Manager {  get; set; }
-        public DbSet<SalestackDirector> Director {  get; set; }
+        public DbSet<SalestackSeller> Seller { get; set; }
+        public DbSet<SalestackManager> Manager { get; set; }
+        public DbSet<SalestackDirector> Director { get; set; }
     }
 }

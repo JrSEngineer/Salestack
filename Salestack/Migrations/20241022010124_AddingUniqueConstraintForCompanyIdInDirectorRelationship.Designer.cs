@@ -12,8 +12,8 @@ using Salestack.Data.Context;
 namespace Salestack.Migrations
 {
     [DbContext(typeof(SalestackDbContext))]
-    [Migration("20241021163403_Initial")]
-    partial class Initial
+    [Migration("20241022010124_AddingUniqueConstraintForCompanyIdInDirectorRelationship")]
+    partial class AddingUniqueConstraintForCompanyIdInDirectorRelationship
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,13 +46,11 @@ namespace Salestack.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("phoneNumber")
+                    b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DirectorId");
 
                     b.ToTable("Company");
                 });
@@ -82,6 +80,9 @@ namespace Salestack.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId")
+                        .IsUnique();
 
                     b.ToTable("Director");
                 });
@@ -142,12 +143,19 @@ namespace Salestack.Migrations
                     b.ToTable("Seller");
                 });
 
+            modelBuilder.Entity("Salestack.Entities.Users.SalestackDirector", b =>
+                {
+                    b.HasOne("Salestack.Entities.Company.SalestackCompany", "Company")
+                        .WithOne("Director")
+                        .HasForeignKey("Salestack.Entities.Users.SalestackDirector", "CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
             modelBuilder.Entity("Salestack.Entities.Company.SalestackCompany", b =>
                 {
-                    b.HasOne("Salestack.Entities.Users.SalestackDirector", "Director")
-                        .WithMany()
-                        .HasForeignKey("DirectorId");
-
                     b.Navigation("Director");
                 });
 #pragma warning restore 612, 618
