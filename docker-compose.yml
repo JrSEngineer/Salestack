@@ -8,13 +8,7 @@ services:
         - POSTGRES_USER=jradmin
         - POSTGRES_PASSWORD=12345678
         - POSTGRES_DB=SalestackDb
-    develop:
-        watch:
-          - path: ./
-            action: sync+restart
-            target: ./app
   
-
   salestack:
     container_name: salestack_api
     image: ${DOCKER_REGISTRY-}salestack
@@ -24,3 +18,8 @@ services:
     ports:
       - 5000:5000
       - 5001:5001
+    develop:
+        watch:
+          - path: ./
+            action: sync+restart
+            target: ./app
