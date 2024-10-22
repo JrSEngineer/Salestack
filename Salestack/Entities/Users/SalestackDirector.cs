@@ -20,4 +20,9 @@ public class SalestackDirector : SalestackBaseUser
 
     [ForeignKey("Company")]
     public Guid CompanyId { get; set; }
+
+    public SalestackDirector()
+    {
+        
+    }
 }
