@@ -43,4 +43,48 @@ public class CompaniesController : ControllerBase
 
         return Ok(companies);
     }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetCompanyByIdAsync(Guid id)
+    {
+        var selectedCompany = await _context.Company
+            .AsNoTracking()
+            .Include(c => c.Director)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (selectedCompany == null) return NotFound(new { Message = $"Company with id {id} not found." });
+
+        return Ok(selectedCompany);
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> UpdateCompanyAsync(Guid id, SalestackCompany data)
+    {
+        var selectedCompany = await _context.Company.FindAsync(id);
+
+        if (selectedCompany == null) return NotFound(new { Message = $"Company with id {id} not found." });
+
+        selectedCompany.Name = data.Name;
+        selectedCompany.Cnpj = data.Cnpj;
+        selectedCompany.CompanyCode = data.CompanyCode;
+        selectedCompany.PhoneNumber = data.PhoneNumber;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(selectedCompany);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteCompanyAsync(Guid id)
+    {
+        var selectedCompany = await _context.Company.FindAsync(id);
+
+        if (selectedCompany == null) return NotFound(new { Message = $"Company with id {id} not found." });
+
+        _context.Company.Remove(selectedCompany);
+        
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
