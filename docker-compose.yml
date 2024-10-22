@@ -8,6 +8,12 @@ services:
         - POSTGRES_USER=jradmin
         - POSTGRES_PASSWORD=12345678
         - POSTGRES_DB=SalestackDb
+    develop:
+        watch:
+          - path: ./
+            action: sync+restart
+            target: ./app
+  
 
   salestack:
     container_name: salestack_api
