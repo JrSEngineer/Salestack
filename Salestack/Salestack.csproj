@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Users\Manager\" />
     <Folder Include="Controllers\Users\Seller\" />
   </ItemGroup>
 
