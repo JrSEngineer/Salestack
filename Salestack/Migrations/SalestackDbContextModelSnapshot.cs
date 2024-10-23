@@ -52,6 +52,36 @@ namespace Salestack.Migrations
                     b.ToTable("Company");
                 });
 
+            modelBuilder.Entity("Salestack.Entities.Teams.SalestackTeam", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DirectorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ManagerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("DirectorId");
+
+                    b.HasIndex("ManagerId");
+
+                    b.ToTable("Team");
+                });
+
             modelBuilder.Entity("Salestack.Entities.Users.SalestackDirector", b =>
                 {
                     b.Property<Guid>("Id")
@@ -90,6 +120,9 @@ namespace Salestack.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
@@ -111,6 +144,8 @@ namespace Salestack.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.ToTable("Manager");
                 });
 
@@ -118,6 +153,9 @@ namespace Salestack.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Email")
@@ -135,9 +173,39 @@ namespace Salestack.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("TeamId");
+
                     b.ToTable("Seller");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Teams.SalestackTeam", b =>
+                {
+                    b.HasOne("Salestack.Entities.Company.SalestackCompany", "Company")
+                        .WithMany("Teams")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Salestack.Entities.Users.SalestackDirector", "Director")
+                        .WithMany("Teams")
+                        .HasForeignKey("DirectorId");
+
+                    b.HasOne("Salestack.Entities.Users.SalestackManager", "Manager")
+                        .WithMany()
+                        .HasForeignKey("ManagerId");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Director");
+
+                    b.Navigation("Manager");
                 });
 
             modelBuilder.Entity("Salestack.Entities.Users.SalestackDirector", b =>
@@ -151,9 +219,55 @@ namespace Salestack.Migrations
                     b.Navigation("Company");
                 });
 
+            modelBuilder.Entity("Salestack.Entities.Users.SalestackManager", b =>
+                {
+                    b.HasOne("Salestack.Entities.Company.SalestackCompany", "Company")
+                        .WithMany("Managers")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Users.SalestackSeller", b =>
+                {
+                    b.HasOne("Salestack.Entities.Company.SalestackCompany", "Company")
+                        .WithMany("Sellers")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Salestack.Entities.Teams.SalestackTeam", "Team")
+                        .WithMany("Sellers")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("Salestack.Entities.Company.SalestackCompany", b =>
                 {
                     b.Navigation("Director");
+
+                    b.Navigation("Managers");
+
+                    b.Navigation("Sellers");
+
+                    b.Navigation("Teams");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Teams.SalestackTeam", b =>
+                {
+                    b.Navigation("Sellers");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Users.SalestackDirector", b =>
+                {
+                    b.Navigation("Teams");
                 });
 #pragma warning restore 612, 618
         }

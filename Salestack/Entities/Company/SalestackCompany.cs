@@ -1,4 +1,5 @@
-﻿using Salestack.Entities.Users;
+﻿using Salestack.Entities.Teams;
+using Salestack.Entities.Users;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Salestack.Entities.Company
@@ -16,6 +17,13 @@ namespace Salestack.Entities.Company
         public string PhoneNumber { get; set; } = string.Empty;
 
         public SalestackDirector? Director { get; set; }
+
         public Guid? DirectorId { get; set; }
+
+        public List<SalestackManager> Managers { get; set; } = [];
+
+        public List<SalestackSeller> Sellers { get; set; } = [];
+
+        public List<SalestackTeam> Teams { get; set; } = [];
     }
 }

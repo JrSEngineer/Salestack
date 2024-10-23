@@ -1,7 +1,6 @@
 ﻿using Salestack.Entities.Company;
+using Salestack.Entities.Teams;
 using Salestack.Enums;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Salestack.Entities.Users;
 
 public class SalestackSeller : SalestackBaseUser
@@ -14,8 +13,11 @@ public class SalestackSeller : SalestackBaseUser
         CompanyOccupation occupation) : base(id, name, email, phoneNumber, occupation) { }
     public SalestackCompany? Company { get; set; }
 
-    [ForeignKey("Company")]
     public Guid CompanyId { get; set; }
+    
+    public SalestackTeam? Team { get; set; }
+
+    public Guid TeamId { get; set; }
 
     public SalestackSeller()
     {

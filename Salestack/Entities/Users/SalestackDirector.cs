@@ -1,4 +1,5 @@
 ﻿using Salestack.Entities.Company;
+using Salestack.Entities.Teams;
 using Salestack.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -20,6 +21,7 @@ public class SalestackDirector : SalestackBaseUser
 
     [ForeignKey("Company")]
     public Guid CompanyId { get; set; }
+    public List<SalestackTeam> Teams { get; set; } = [];
 
     public SalestackDirector()
     {

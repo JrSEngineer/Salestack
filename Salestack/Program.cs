@@ -35,6 +35,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("api/test", () => $"API IS RUNNING! {DateTime.UtcNow}.");
+app.MapGet("api/test", () => $"API IS RUNNING! {DateTime.UtcNow}.").WithTags("Api");
 
 app.Run();
