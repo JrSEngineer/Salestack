@@ -1,5 +1,6 @@
 ﻿using Salestack.Entities.Teams;
 using Salestack.Entities.Users;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Salestack.Entities.Company
@@ -8,12 +9,17 @@ namespace Salestack.Entities.Company
     {
         public Guid Id { get; set; }
 
+        [Required(ErrorMessage = "You must provide a valid Name.")]
         public string Name { get; set; } = string.Empty;
 
         public string CompanyCode { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "You must provide a valid CNPJ."),
+         Length(minimumLength: 14, maximumLength: 14)]
         public string Cnpj { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "You must provide a valid PhoneNumber."),
+         Length(maximumLength: 14)]
         public string PhoneNumber { get; set; } = string.Empty;
 
         public SalestackDirector? Director { get; set; }
