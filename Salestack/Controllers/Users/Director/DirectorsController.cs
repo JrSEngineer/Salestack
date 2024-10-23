@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Salestack.Data.Context;
 using Salestack.Entities.Users;
+using Salestack.Enums;
 
 namespace Salestack.Controllers.Users.Director;
 
@@ -16,16 +17,32 @@ public class DirectorsController : ControllerBase
         _context = context;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateDirectorAsync(SalestackDirector data)
+    [HttpPost("companyCode={companyCode}")]
+    public async Task<IActionResult> CreateDirectorAsync(SalestackDirector data, string companyCode)
     {
+        var companyForDirectorCreation = await _context.Company
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
+
+        if (companyForDirectorCreation == null)
+            return BadRequest(new
+            {
+                Message = $"No company found with id '{data.CompanyId}'."
+            });
+
+        if (companyForDirectorCreation.CompanyCode != companyCode)
+            return BadRequest(new
+            {
+                Message = "Please, provide a valid company code."
+            });
+
         var newDirector = new SalestackDirector
         {
             Id = Guid.NewGuid(),
             Name = data.Name,
             Email = data.Email,
             PhoneNumber = data.PhoneNumber,
-            Occupation = data.Occupation,
+            Occupation = CompanyOccupation.Director,
             CompanyId = data.CompanyId
         };
 
@@ -49,7 +66,6 @@ public class DirectorsController : ControllerBase
     {
         var selectedDirector = await _context.Director
             .AsNoTracking()
-            .Include(d => d.Company)
             .FirstOrDefaultAsync(d => d.Id == id);
 
         if (selectedDirector == null) return NotFound(new { Message = $"Director with id {id} not found." });
