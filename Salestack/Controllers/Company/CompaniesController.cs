@@ -39,6 +39,7 @@ public class CompaniesController : ControllerBase
     public async Task<IActionResult> GetAllCompaniesAsync()
     {
         var companies = await _context.Company
+            .AsNoTracking()
             .Include(c => c.Director).ToListAsync();
 
         return Ok(companies);

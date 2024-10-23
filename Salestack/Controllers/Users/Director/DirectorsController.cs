@@ -19,14 +19,15 @@ public class DirectorsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateDirectorAsync(SalestackDirector data)
     {
-        var newDirector = new SalestackDirector(
-            Guid.NewGuid(),
-            data.Name,
-            data.Email,
-            data.PhoneNumber,
-            data.Occupation,
-            data.CompanyId
-            );
+        var newDirector = new SalestackDirector
+        {
+            Id = Guid.NewGuid(),
+            Name = data.Name,
+            Email = data.Email,
+            PhoneNumber = data.PhoneNumber,
+            Occupation = data.Occupation,
+            CompanyId = data.CompanyId
+        };
 
         await _context.Director.AddAsync(newDirector);
 
@@ -38,7 +39,7 @@ public class DirectorsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllDirectorsAsync()
     {
-        var directors = await _context.Director.ToListAsync();
+        var directors = await _context.Director.AsNoTracking().ToListAsync();
 
         return Ok(directors);
     }
