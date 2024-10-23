@@ -21,5 +21,4 @@ services:
     develop:
         watch:
           - path: ./
-            action: sync+restart
-            target: ./app
+            action: rebuild
