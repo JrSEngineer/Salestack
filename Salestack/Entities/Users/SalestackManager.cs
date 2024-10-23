@@ -14,7 +14,7 @@ public class SalestackManager : SalestackBaseUser
     CompanyOccupation occupation) : base(id, name, email, phoneNumber, occupation) { }
 
     [Required(ErrorMessage = "You must provide a valid VerificationCode."),
-     Length(minimumLength: 8)]
+     Length(minimumLength: 8, maximumLength: 20)]
     public String VerificationCode { get; set; } = string.Empty;
 
     public SalestackCompany? Company { get; set; }

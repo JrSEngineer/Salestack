@@ -33,10 +33,9 @@ public abstract class SalestackBaseUser
     public string Email { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "You must provide a valid PhoneNumber."),
-     Length(maximumLength: 14)]
+     Length(minimumLength:8, maximumLength: 14)]
     public string PhoneNumber { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "You must provide a valid Occupation."),
-     EnumDataType(Occupation)]
+    [Required(ErrorMessage = "You must provide a valid Occupation.")]
     public CompanyOccupation Occupation { get; set; }
 }

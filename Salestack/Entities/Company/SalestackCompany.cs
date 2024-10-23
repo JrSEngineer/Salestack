@@ -19,7 +19,7 @@ namespace Salestack.Entities.Company
         public string Cnpj { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "You must provide a valid PhoneNumber."),
-         Length(maximumLength: 14)]
+         Length(minimumLength:8, maximumLength: 20)]
         public string PhoneNumber { get; set; } = string.Empty;
 
         public SalestackDirector? Director { get; set; }

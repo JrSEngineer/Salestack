@@ -16,6 +16,10 @@ namespace Salestack.Data.Context
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<SalestackCompany>().HasIndex(c => c.Cnpj).IsUnique();
+
+            builder.Entity<SalestackCompany>().HasIndex(c => c.PhoneNumber).IsUnique();
+
             builder.Entity<SalestackDirector>().HasIndex(d => d.CompanyId).IsUnique();
 
             builder.Entity<SalestackCompany>().HasMany(c => c.Managers).WithOne(m => m.Company);
