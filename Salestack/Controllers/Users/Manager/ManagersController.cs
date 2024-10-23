@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Salestack.Data.Context;
 using Salestack.Entities.Users;
+using Salestack.Enums;
 
 namespace Salestack.Controllers.Users.Manager;
 
@@ -16,16 +17,38 @@ public class ManagersController : ControllerBase
         _context = context;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateManagerAsync(SalestackManager data)
+    [HttpPost("directorId")]
+    public async Task<IActionResult> CreateManagerAsync(SalestackManager data, Guid directorId)
     {
+        var newManagerCompany = await _context.Company.FindAsync(data.CompanyId);
+
+        if (newManagerCompany == null)
+            return NotFound(new
+            {
+                Message = $"Compnay with id {data.CompanyId} not found."
+            });
+
+        var directorForManagerCreation = newManagerCompany.Director;
+
+        if (directorForManagerCreation == null)
+            return NotFound(new
+            {
+                Message = $"The current company has no director."
+            });
+
+        if (directorForManagerCreation.Id != directorId)
+            return NotFound(new
+            {
+                Message = "Please, provide a valid identifier for company director (directorId)."
+            });
+
         var newManager = new SalestackManager
         {
             Id = Guid.NewGuid(),
             Name = data.Name,
             Email = data.Email,
             PhoneNumber = data.PhoneNumber,
-            Occupation = data.Occupation,
+            Occupation = CompanyOccupation.Manager,
             VerificationCode = data.VerificationCode,
             CompanyId = data.CompanyId
         };
@@ -46,7 +69,7 @@ public class ManagersController : ControllerBase
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == companyId);
 
-        if (selectedCompany == null) return NotFound(new {Message = $"Company with id {companyId} not found." });
+        if (selectedCompany == null) return NotFound(new { Message = $"Company with id {companyId} not found." });
 
         var managers = selectedCompany.Managers;
 
