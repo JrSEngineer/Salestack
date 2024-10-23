@@ -38,10 +38,17 @@ public class ManagersController : ControllerBase
     }
 
 
-    [HttpGet]
-    public async Task<IActionResult> GetAllManagersAsync()
+    [HttpGet("companyId={companyId}")]
+    public async Task<IActionResult> GetComapanyManagersAsync(Guid companyId)
     {
-        var managers = await _context.Manager.AsNoTracking().ToListAsync();
+        var selectedCompany = await _context.Company
+            .Include(c => c.Managers)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == companyId);
+
+        if (selectedCompany == null) return NotFound(new {Message = $"Company with id {companyId} not found." });
+
+        var managers = selectedCompany.Managers;
 
         return Ok(managers);
     }
@@ -73,7 +80,6 @@ public class ManagersController : ControllerBase
         selectedManager.Email = data.Email;
         selectedManager.PhoneNumber = data.PhoneNumber;
         selectedManager.VerificationCode = data.VerificationCode;
-        selectedManager.CompanyId = data.CompanyId;
 
         await _context.SaveChangesAsync();
 
