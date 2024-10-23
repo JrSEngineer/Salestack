@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Salestack.Data.Context;
+using Salestack.Entities;
 using Salestack.Entities.Teams;
+using Salestack.Entities.Users;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -71,16 +73,29 @@ public class TeamsController : ControllerBase
     }
 
 
-    [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdateTeamAsync(Guid id, SalestackTeam data)
+    [HttpPatch("{id}/leaderId={leaderId}")]
+    public async Task<IActionResult> UpdateTeamAsync(Guid id, SalestackTeam data, Guid leaderId)
     {
+        SalestackBaseUser? teamLeader;
+
         var selectedTeam = await _context.Team.FindAsync(id);
 
-        if (selectedTeam == null)
-            return NotFound(new { Message = $"Team with id {id} not found." });
+        if (selectedTeam == null) return NotFound(new { Message = $"Team with id {id} not found." });
+
+        if (selectedTeam.DirectorId != null)
+        {
+            teamLeader = (SalestackDirector?)await _context.Director
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.Id == leaderId);
+        }
+
+        teamLeader = (SalestackManager?)await _context.Manager
+        .AsNoTracking()
+        .FirstOrDefaultAsync(m => m.Id == leaderId);
+
+        if (teamLeader == null) return NotFound(new { Message = $"No leader with id {leaderId} found for the current Team." });
 
         selectedTeam.Name = data.Name;
-        selectedTeam.ManagerId = data.ManagerId;
         selectedTeam.Sellers = data.Sellers;
 
         await _context.SaveChangesAsync();
