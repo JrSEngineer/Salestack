@@ -122,8 +122,8 @@ public class ManagersController : ControllerBase
     }
 
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteManagerAsync(Guid id)
+    [HttpDelete("leaderId={leaderId}/{id}")]
+    public async Task<IActionResult> DeleteManagerAsync(Guid leaderId, Guid id)
     {
         var selectedManagerForDeleteOperation = await _context.Manager.FindAsync(id);
 
@@ -135,14 +135,16 @@ public class ManagersController : ControllerBase
             });
         }
 
-        var managerCompany = await _context.Company.FindAsync(selectedManagerForDeleteOperation.CompanyId);
+        var managerCompany = await _context.Company
+            .Include(c => c.Director)
+            .FirstOrDefaultAsync(c => c.Id == selectedManagerForDeleteOperation.CompanyId);
 
-        bool managerPresentInCurrentCompany = managerCompany!.Managers.Exists(m => m.Id == id);
+        bool allowedConditionForManagerDeleteOperation = managerCompany!.Director!.Id == leaderId;
 
-        if (!managerPresentInCurrentCompany)
+        if (!allowedConditionForManagerDeleteOperation)
             return BadRequest(new
             {
-                Message = $"Manager with id {id} is not present in company with id {selectedManagerForDeleteOperation.CompanyId}."
+                Message = "Please, provide a valid leader id (directorId)."
             });
 
         _context.Manager.Remove(selectedManagerForDeleteOperation);
