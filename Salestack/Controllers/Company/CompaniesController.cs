@@ -16,6 +16,7 @@ public class CompaniesController : ControllerBase
         _context = context;
     }
 
+
     [HttpPost]
     public async Task<IActionResult> CreateCompanyAsync(SalestackCompany data)
     {
@@ -35,6 +36,7 @@ public class CompaniesController : ControllerBase
         return Created("salestack-api", newCompany);
     }
 
+
     [HttpGet]
     public async Task<IActionResult> GetAllCompaniesAsync()
     {
@@ -45,6 +47,7 @@ public class CompaniesController : ControllerBase
         return Ok(companies);
     }
 
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCompanyByIdAsync(Guid id)
     {
@@ -53,37 +56,66 @@ public class CompaniesController : ControllerBase
             .Include(c => c.Director)
             .FirstOrDefaultAsync(c => c.Id == id);
 
-        if (selectedCompany == null) return NotFound(new { Message = $"Company with id {id} not found." });
+        if (selectedCompany == null)
+            return NotFound(new
+            {
+                Message = $"Company with id {id} not found."
+            });
 
         return Ok(selectedCompany);
     }
 
-    [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdateCompanyAsync(Guid id, SalestackCompany data)
+
+    [HttpPatch("{id}/companyCode={companyCode}")]
+    public async Task<IActionResult> UpdateCompanyAsync(Guid id, SalestackCompany data, string companyCode)
     {
-        var selectedCompany = await _context.Company.FindAsync(id);
+        var selectedCompanyForUpdateOperation = await _context.Company.FindAsync(id);
 
-        if (selectedCompany == null) return NotFound(new { Message = $"Company with id {id} not found." });
+        if (selectedCompanyForUpdateOperation == null)
+            return NotFound(new
+            {
+                Message = $"Company with id {id} not found."
+            });
 
-        selectedCompany.Name = data.Name;
-        selectedCompany.Cnpj = data.Cnpj;
-        selectedCompany.CompanyCode = data.CompanyCode;
-        selectedCompany.PhoneNumber = data.PhoneNumber;
+        if (selectedCompanyForUpdateOperation.CompanyCode != companyCode)
+        {
+            return NotFound(new
+            {
+                Message = $"Please, provide a valid company code."
+            });
+        }
+
+        selectedCompanyForUpdateOperation.Name = data.Name;
+        selectedCompanyForUpdateOperation.Cnpj = data.Cnpj;
+        selectedCompanyForUpdateOperation.CompanyCode = data.CompanyCode;
+        selectedCompanyForUpdateOperation.PhoneNumber = data.PhoneNumber;
 
         await _context.SaveChangesAsync();
 
-        return Ok(selectedCompany);
+        return Ok(selectedCompanyForUpdateOperation);
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCompanyAsync(Guid id)
+
+    [HttpDelete("{id}/companyCode={companyCode}")]
+    public async Task<IActionResult> DeleteCompanyAsync(Guid id, string companyCode)
     {
-        var selectedCompany = await _context.Company.FindAsync(id);
+        var selectedCompanyForDeleteOperation = await _context.Company.FindAsync(id);
 
-        if (selectedCompany == null) return NotFound(new { Message = $"Company with id {id} not found." });
+        if (selectedCompanyForDeleteOperation == null)
+            return NotFound(new
+            {
+                Message = $"Company with id {id} not found."
+            });
+        if (selectedCompanyForDeleteOperation.CompanyCode != companyCode)
+        {
+            return NotFound(new
+            {
+                Message = $"Please, provide a valid company code."
+            });
+        }
 
-        _context.Company.Remove(selectedCompany);
-        
+        _context.Company.Remove(selectedCompanyForDeleteOperation);
+
         await _context.SaveChangesAsync();
 
         return NoContent();
