@@ -25,19 +25,19 @@ public class ManagersController : ControllerBase
         if (newManagerCompany == null)
             return NotFound(new
             {
-                Message = $"Compnay with id {data.CompanyId} not found."
+                Message = $"Company with id {data.CompanyId} not found."
             });
 
         var directorForManagerCreation = newManagerCompany.Director;
 
         if (directorForManagerCreation == null)
-            return NotFound(new
+            return BadRequest(new
             {
                 Message = $"The current company has no director."
             });
 
         if (directorForManagerCreation.Id != directorId)
-            return NotFound(new
+            return BadRequest(new
             {
                 Message = "Please, provide a valid identifier for company director (directorId)."
             });
@@ -69,7 +69,11 @@ public class ManagersController : ControllerBase
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == companyId);
 
-        if (selectedCompany == null) return NotFound(new { Message = $"Company with id {companyId} not found." });
+        if (selectedCompany == null)
+            return NotFound(new
+            {
+                Message = $"Company with id {companyId} not found."
+            });
 
         var managers = selectedCompany.Managers;
 
@@ -82,10 +86,13 @@ public class ManagersController : ControllerBase
     {
         var selectedManager = await _context.Manager
             .AsNoTracking()
-            .Include(m => m.Company)
             .FirstOrDefaultAsync(m => m.Id == id);
 
-        if (selectedManager == null) return NotFound(new { Message = $"Manager with id {id} not found." });
+        if (selectedManager == null)
+            return NotFound(new
+            {
+                Message = $"Manager with id {id} not found."
+            });
 
         return Ok(selectedManager);
     }
@@ -97,7 +104,10 @@ public class ManagersController : ControllerBase
         var selectedManager = await _context.Manager.FindAsync(id);
 
         if (selectedManager == null)
-            return NotFound(new { Message = $"Manager with id {id} not found." });
+            return NotFound(new
+            {
+                Message = $"Manager with id {id} not found."
+            });
 
         selectedManager.Name = data.Name;
         selectedManager.Email = data.Email;
@@ -113,12 +123,28 @@ public class ManagersController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteManagerAsync(Guid id)
     {
-        var selectedManager = await _context.Manager.FindAsync(id);
+        var selectedManagerForDeleteOperation = await _context.Manager.FindAsync(id);
 
-        if (selectedManager == null)
-            return NotFound(new { Message = $"Manager with id {id} not found." });
+        if (selectedManagerForDeleteOperation == null)
+        {
+            return NotFound(new
+            {
+                Message = $"Manager with id {id} not found."
+            });
+        }
 
-        _context.Manager.Remove(selectedManager);
+        var managerCompany = await _context.Company.FindAsync(selectedManagerForDeleteOperation.CompanyId);
+
+        bool managerPresentInCurrentCompany = managerCompany!.Managers.Exists(m => m.Id == id);
+
+        if (!managerPresentInCurrentCompany)
+            return BadRequest(new
+            {
+                Message = $"Manager with id {id} is not present in company with id {selectedManagerForDeleteOperation.CompanyId}."
+            });
+
+        _context.Manager.Remove(selectedManagerForDeleteOperation);
+
         await _context.SaveChangesAsync();
 
         return NoContent();
