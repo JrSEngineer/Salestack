@@ -4,6 +4,8 @@ using Salestack.Data.Context;
 using Salestack.Entities;
 using Salestack.Entities.Teams;
 using Salestack.Entities.Users;
+using System.ComponentModel.Design;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -18,10 +20,23 @@ public class TeamsController : ControllerBase
 
 
     [HttpPost]
-    public async Task<IActionResult> CreateTeamAsync(SalestackTeam data)
+    public async Task<IActionResult> CreateTeamAsync(Guid companyId, SalestackTeam data)
     {
+        var newTeamCompany = await _context.Company.FindAsync(data.CompanyId);
 
-        if (data.DirectorId == null && data.ManagerId == null)
+        if (newTeamCompany == null)
+        {
+            return NotFound(new
+            {
+                Message = $"Company with id {companyId} not found."
+            });
+        }
+
+        bool allowedTeamUpdateCondition =
+            newTeamCompany.DirectorId == data.DirectorId ||
+            newTeamCompany.Managers.Exists(m => m.Id == data.ManagerId);
+
+        if (!allowedTeamUpdateCondition)
         {
             return BadRequest("Your new team must have at least one director or manager as leader.");
         }
@@ -45,13 +60,17 @@ public class TeamsController : ControllerBase
 
 
     [HttpGet("companyId={companyId}")]
-    public async Task<IActionResult> GetAllTeamsAsync(Guid companyId)
+    public async Task<IActionResult> GetAllTeamsFromCompanyAsync(Guid companyId)
     {
         var currentCompany = await _context.Company
             .Include(c => c.Teams)
             .FirstOrDefaultAsync(c => c.Id == companyId);
 
-        if (currentCompany == null) return NotFound(new { Message = $"Company with id {companyId} not found." });
+        if (currentCompany == null)
+            return NotFound(new
+            {
+                Message = $"Company with id {companyId} not found."
+            });
 
         var teams = currentCompany.Teams;
 
@@ -67,7 +86,11 @@ public class TeamsController : ControllerBase
             .Include(t => t.Sellers)
             .FirstOrDefaultAsync(t => t.Id == id);
 
-        if (selectedTeam == null) return NotFound(new { Message = $"Team with id {id} not found." });
+        if (selectedTeam == null)
+            return NotFound(new
+            {
+                Message = $"Team with id {id} not found."
+            });
 
         return Ok(selectedTeam);
     }
@@ -76,42 +99,69 @@ public class TeamsController : ControllerBase
     [HttpPatch("{id}/leaderId={leaderId}")]
     public async Task<IActionResult> UpdateTeamAsync(Guid id, SalestackTeam data, Guid leaderId)
     {
-        SalestackBaseUser? teamLeader;
+        var selectedTeamForUpdateOperation = await _context.Team.FindAsync(id);
 
-        var selectedTeam = await _context.Team.FindAsync(id);
-
-        if (selectedTeam == null) return NotFound(new { Message = $"Team with id {id} not found." });
-
-        if (selectedTeam.DirectorId != null)
+        if (selectedTeamForUpdateOperation == null)
         {
-            teamLeader = (SalestackDirector?)await _context.Director
-            .AsNoTracking()
-            .FirstOrDefaultAsync(d => d.Id == leaderId);
+            return NotFound(new
+            {
+                Message = $"Team with id {id} not found."
+            });
         }
 
-        teamLeader = (SalestackManager?)await _context.Manager
-        .AsNoTracking()
-        .FirstOrDefaultAsync(m => m.Id == leaderId);
+        var teamCompanyForUpdateOperation = await _context.Company.FindAsync(data.CompanyId);
 
-        if (teamLeader == null) return NotFound(new { Message = $"No leader with id {leaderId} found for the current Team." });
+        bool allowedTeamUpdateCondition = teamCompanyForUpdateOperation!.DirectorId == leaderId ||
+            teamCompanyForUpdateOperation.Managers.Exists(m => m.Id == leaderId);
 
-        selectedTeam.Name = data.Name;
-        selectedTeam.Sellers = data.Sellers;
+        if (!allowedTeamUpdateCondition)
+            return NotFound(new
+            {
+                Message = $"No leader with id {leaderId} found for the current Team."
+            });
+
+        teamCompanyForUpdateOperation.Name = data.Name;
+        teamCompanyForUpdateOperation.Sellers = data.Sellers;
 
         await _context.SaveChangesAsync();
 
-        return Ok(selectedTeam);
+        return Ok(teamCompanyForUpdateOperation);
     }
 
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteTeamAsync(Guid id)
+    [HttpDelete("leaderId={leaderId}/{id}")]
+    public async Task<IActionResult> DeleteTeamAsync(Guid leaderId, Guid id)
     {
+        var selectedTeamForDeleteOperation = await _context.Team.FindAsync(id);
+
+        if (selectedTeamForDeleteOperation == null)
+        {
+            return NotFound(new
+            {
+                Message = $"Team with id {id} not found."
+            });
+        }
+
+        var teamCompanyForDeleteOperation = await _context.Company.FindAsync(selectedTeamForDeleteOperation.CompanyId);
+
+        bool allowedTeamDeleteCondition = teamCompanyForDeleteOperation!.DirectorId == leaderId ||
+            teamCompanyForDeleteOperation.Managers.Exists(m => m.Id == leaderId);
+
+        if (!allowedTeamDeleteCondition)
+            return NotFound(new
+            {
+                Message = $"No leader with id {leaderId} found for the current Team."
+            });
+
         var selectedTeam = await _context.Team.FindAsync(id);
 
-        if (selectedTeam == null) return NotFound(new { Message = $"Team with id {id} not found." });
+        if (selectedTeam == null)
+            return NotFound(new
+            {
+                Message = $"Team with id {id} not found."
+            });
 
-        _context.Team.Remove(selectedTeam);
+        _context.Team.Remove(selectedTeamForDeleteOperation);
 
         await _context.SaveChangesAsync();
 
