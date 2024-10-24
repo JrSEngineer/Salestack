@@ -54,6 +54,9 @@ public class CompaniesController : ControllerBase
         var selectedCompany = await _context.Company
             .AsNoTracking()
             .Include(c => c.Director)
+            .Include(c => c.Managers)
+            .Include(c => c.Teams)
+            .Include(c => c.Sellers)
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (selectedCompany == null)
