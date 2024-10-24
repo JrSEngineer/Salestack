@@ -17,7 +17,7 @@ public class ManagersController : ControllerBase
         _context = context;
     }
 
-    [HttpPost("directorId")]
+    [HttpPost("{directorId}")]
     public async Task<IActionResult> CreateManagerAsync(SalestackManager data, Guid directorId)
     {
         var newManagerCompany = await _context.Company
