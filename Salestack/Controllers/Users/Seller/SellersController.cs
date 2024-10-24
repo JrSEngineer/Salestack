@@ -20,6 +20,28 @@ public class SellersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateSellerAsync(SalestackSeller data)
     {
+        var companyForNewSellerCreationOperation = await _context.Company
+            .Include(c => c.Teams)
+            .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
+
+        if (companyForNewSellerCreationOperation == null)
+        {
+            return NotFound(new
+            {
+                Message = $"Company with id {data.CompanyId} not found."
+            });
+        }
+
+        var newSellerTeam = companyForNewSellerCreationOperation.Teams.FirstOrDefault(t => t.Id == data.TeamId);
+
+        if (newSellerTeam == null)
+        {
+            return NotFound(new
+            {
+                Message = $"There is no team associated with the current company. Company id: {data.CompanyId}."
+            });
+        }
+
         var newSeller = new SalestackSeller
         {
             Id = Guid.NewGuid(),
@@ -46,7 +68,11 @@ public class SellersController : ControllerBase
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == companyId);
 
-        if (selectedCompany == null) return NotFound(new { Message = $"Company with id {companyId} not found." });
+        if (selectedCompany == null)
+            return NotFound(new
+            {
+                Message = $"Company with id {companyId} not found."
+            });
 
         var companySellers = selectedCompany.Sellers;
 
@@ -61,58 +87,121 @@ public class SellersController : ControllerBase
             .IgnoreAutoIncludes()
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (selectedSeller == null) return NotFound(new { Message = $"Seller with id {id} not found." });
+        if (selectedSeller == null)
+            return NotFound(new
+            {
+                Message = $"Seller with id {id} not found."
+            });
 
         return Ok(selectedSeller);
     }
 
-    [HttpPatch("{id}")]
+    [HttpPatch("id")]
     public async Task<IActionResult> UpdateSellerAsync(Guid id, SalestackSeller data)
     {
-        var selectedSeller = await _context.Seller
-            .AsNoTracking()
+        var selectedSellerForUpdateOperation = await _context.Seller
             .IgnoreAutoIncludes()
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (selectedSeller == null) return NotFound(new { Message = $"Seller with id {id} not found." });
+        if (selectedSellerForUpdateOperation == null)
+            return NotFound(new
+            {
+                Message = $"Seller with id {id} not found."
+            });
 
-        selectedSeller.Name = data.Name;
-        selectedSeller.Email = data.Email;
-        selectedSeller.PhoneNumber = data.PhoneNumber;
+        selectedSellerForUpdateOperation.Name = data.Name;
+        selectedSellerForUpdateOperation.Email = data.Email;
+        selectedSellerForUpdateOperation.PhoneNumber = data.PhoneNumber;
 
         await _context.SaveChangesAsync();
 
-        return Ok(selectedSeller);
+        return Ok(selectedSellerForUpdateOperation);
     }
 
-    [HttpPatch("{id}/teamId={teamId}")]
-    public async Task<IActionResult> ChangeSellerTeamsync(Guid id, Guid teamId)
+    [HttpPatch("companyId={companyId}/leaderId={leaderId}/newTeamId={newTeamId}/sellerId={sellerId}")]
+    public async Task<IActionResult> ChangeSellerTeamAsync(Guid companyId, Guid leaderId, Guid newTeamId, Guid sellerId)
     {
-        var selectedSeller = await _context.Seller
-            .AsNoTracking()
+        var selectedCompanyToSellerTeamChange = await _context.Company
+            .Include(c => c.DirectorId)
+            .Include(c => c.Managers)
+            .Include(c => c.Teams)
+            .FirstOrDefaultAsync(c => c.Id == companyId);
+
+        if (selectedCompanyToSellerTeamChange == null)
+        {
+            return NotFound($"Company with id {companyId} not found.");
+        }
+
+        bool allowedConditionToSellerTeamTransfferOperation = selectedCompanyToSellerTeamChange.Teams.Exists(t => t.DirectorId == leaderId) ||
+            selectedCompanyToSellerTeamChange.Teams.Exists(t => t.ManagerId == leaderId);
+
+        if (!allowedConditionToSellerTeamTransfferOperation)
+        {
+            return BadRequest(new
+            {
+                Message = "Please, provide a valid value as a leader identifier (directorId | managerId)."
+            });
+        }
+
+        var newSellerTeam = selectedCompanyToSellerTeamChange.Teams.FirstOrDefault(t => t.Id == newTeamId);
+
+        if (newSellerTeam == null)
+        {
+            return BadRequest(new
+            {
+                Message = "Please, provide a valid id for the new seller's team."
+            });
+        }
+
+        bool sellerAlreadyPresentInTheCurrentTeam = newSellerTeam.Sellers.Exists(t => t.Id == sellerId);
+
+        if (sellerAlreadyPresentInTheCurrentTeam)
+        {
+            return BadRequest(new
+            {
+                Message = $"Seller with id {sellerId} is already present in team with id {newTeamId}."
+            });
+        }
+
+        var selectedSellerForTeamChangeOperation = await _context.Seller
             .IgnoreAutoIncludes()
-            .FirstOrDefaultAsync(s => s.Id == id);
+            .FirstOrDefaultAsync(s => s.Id == sellerId);
 
-        if (selectedSeller == null) return NotFound(new { Message = $"Seller with id {id} not found." });
-
-        selectedSeller.TeamId = teamId;
+        selectedSellerForTeamChangeOperation!.TeamId = newTeamId;
 
         await _context.SaveChangesAsync();
 
-        return Ok(selectedSeller);
+        return Ok(selectedSellerForTeamChangeOperation);
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteSellerAsync(Guid id)
+    [HttpDelete("leaderId={leaderId}/{id}")]
+    public async Task<IActionResult> DeleteSellerAsync(Guid leaderId, Guid id)
     {
-        var selectedSeller = await _context.Seller
+        var selectedSellerForDeleteOperation = await _context.Seller
             .AsNoTracking()
             .IgnoreAutoIncludes()
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (selectedSeller == null) return NotFound(new { Message = $"Seller with id {id} not found." });
+        if (selectedSellerForDeleteOperation == null)
+            return NotFound(new
+            {
+                Message = $"Seller with id {id} not found."
+            });
 
-        _context.Seller.Remove(selectedSeller);
+        var sellerTeam = await _context.Team.FindAsync(selectedSellerForDeleteOperation.TeamId);
+
+        bool allowedConditionToRemoveSeller = sellerTeam!.DirectorId == leaderId ||
+            sellerTeam!.ManagerId == id;
+
+        if (!allowedConditionToRemoveSeller)
+        {
+            return BadRequest(new
+            {
+                Message = "Please, provide a valid leader id (directorId | managerId)."
+            });
+        }
+
+        _context.Seller.Remove(selectedSellerForDeleteOperation);
 
         await _context.SaveChangesAsync();
 
