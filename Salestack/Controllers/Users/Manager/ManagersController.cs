@@ -20,7 +20,9 @@ public class ManagersController : ControllerBase
     [HttpPost("directorId")]
     public async Task<IActionResult> CreateManagerAsync(SalestackManager data, Guid directorId)
     {
-        var newManagerCompany = await _context.Company.FindAsync(data.CompanyId);
+        var newManagerCompany = await _context.Company
+            .Include(c => c.Director)
+            .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
 
         if (newManagerCompany == null)
             return NotFound(new

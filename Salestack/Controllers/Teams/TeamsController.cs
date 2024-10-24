@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Salestack.Data.Context;
-using Salestack.Entities;
 using Salestack.Entities.Teams;
-using Salestack.Entities.Users;
-using System.ComponentModel.Design;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -22,7 +18,10 @@ public class TeamsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateTeamAsync(Guid companyId, SalestackTeam data)
     {
-        var newTeamCompany = await _context.Company.FindAsync(data.CompanyId);
+        var newTeamCompany = await _context.Company
+            .Include(c => c.DirectorId)
+            .Include(c => c.Managers)
+            .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
 
         if (newTeamCompany == null)
         {
@@ -109,7 +108,10 @@ public class TeamsController : ControllerBase
             });
         }
 
-        var teamCompanyForUpdateOperation = await _context.Company.FindAsync(data.CompanyId);
+        var teamCompanyForUpdateOperation = await _context.Company
+            .Include(c => c.DirectorId)
+            .Include(c => c.Managers)
+            .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
 
         bool allowedTeamUpdateCondition = teamCompanyForUpdateOperation!.DirectorId == leaderId ||
             teamCompanyForUpdateOperation.Managers.Exists(m => m.Id == leaderId);
