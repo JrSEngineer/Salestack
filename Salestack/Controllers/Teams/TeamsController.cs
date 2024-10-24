@@ -15,11 +15,11 @@ public class TeamsController : ControllerBase
     }
 
 
-    [HttpPost]
-    public async Task<IActionResult> CreateTeamAsync(Guid companyId, SalestackTeam data)
+    [HttpPost("leaderId={leaderId}")]
+    public async Task<IActionResult> CreateTeamAsync(Guid leaderId, SalestackTeam data)
     {
         var newTeamCompany = await _context.Company
-            .Include(c => c.DirectorId)
+            .Include(c => c.Director)
             .Include(c => c.Managers)
             .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
 
@@ -27,15 +27,15 @@ public class TeamsController : ControllerBase
         {
             return NotFound(new
             {
-                Message = $"Company with id {companyId} not found."
+                Message = $"Company with id {data.CompanyId} not found."
             });
         }
 
-        bool allowedTeamUpdateCondition =
-            newTeamCompany.DirectorId == data.DirectorId ||
-            newTeamCompany.Managers.Exists(m => m.Id == data.ManagerId);
+        bool allowedTeamCreationCondition =
+            newTeamCompany.Director?.Id == leaderId ||
+            newTeamCompany.Managers.Exists(m => m.Id == leaderId);
 
-        if (!allowedTeamUpdateCondition)
+        if (!allowedTeamCreationCondition)
         {
             return BadRequest("Your new team must have at least one director or manager as leader.");
         }
@@ -45,8 +45,8 @@ public class TeamsController : ControllerBase
             Id = Guid.NewGuid(),
             Name = data.Name,
             CompanyId = data.CompanyId,
-            DirectorId = data.DirectorId,
-            ManagerId = data.ManagerId,
+            DirectorId = newTeamCompany.Director!.Id == leaderId ? leaderId : data.DirectorId,
+            ManagerId = newTeamCompany.Managers.Exists(m => m.Id == leaderId) ? leaderId : data.ManagerId,
             Sellers = data.Sellers,
         };
 
@@ -109,11 +109,12 @@ public class TeamsController : ControllerBase
         }
 
         var teamCompanyForUpdateOperation = await _context.Company
-            .Include(c => c.DirectorId)
+            .Include(c => c.Director)
             .Include(c => c.Managers)
             .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
 
-        bool allowedTeamUpdateCondition = teamCompanyForUpdateOperation!.DirectorId == leaderId ||
+        bool allowedTeamUpdateCondition = teamCompanyForUpdateOperation!.Director != null ?
+            teamCompanyForUpdateOperation!.Director.Id == leaderId || teamCompanyForUpdateOperation.Managers.Exists(m => m.Id == leaderId) :
             teamCompanyForUpdateOperation.Managers.Exists(m => m.Id == leaderId);
 
         if (!allowedTeamUpdateCondition)
@@ -122,8 +123,8 @@ public class TeamsController : ControllerBase
                 Message = $"No leader with id {leaderId} found for the current Team."
             });
 
-        teamCompanyForUpdateOperation.Name = data.Name;
-        teamCompanyForUpdateOperation.Sellers = data.Sellers;
+        selectedTeamForUpdateOperation.Name = data.Name;
+        selectedTeamForUpdateOperation.Sellers = data.Sellers;
 
         await _context.SaveChangesAsync();
 
