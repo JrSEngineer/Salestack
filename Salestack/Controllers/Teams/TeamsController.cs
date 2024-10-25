@@ -32,7 +32,7 @@ public class TeamsController : ControllerBase
         }
 
         bool allowedTeamCreationCondition =
-            newTeamCompany.Director?.Id == leaderId ||
+            newTeamCompany.Director.Id == leaderId ||
             newTeamCompany.Managers.Exists(m => m.Id == leaderId);
 
         if (!allowedTeamCreationCondition)
@@ -45,7 +45,7 @@ public class TeamsController : ControllerBase
             Id = Guid.NewGuid(),
             Name = data.Name,
             CompanyId = data.CompanyId,
-            DirectorId = newTeamCompany.Director!.Id == leaderId ? leaderId : data.DirectorId,
+            DirectorId = newTeamCompany.Director.Id == leaderId ? leaderId : data.DirectorId,
             ManagerId = newTeamCompany.Managers.Exists(m => m.Id == leaderId) ? leaderId : data.ManagerId,
             Sellers = data.Sellers,
         };
@@ -113,8 +113,7 @@ public class TeamsController : ControllerBase
             .Include(c => c.Managers)
             .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
 
-        bool allowedTeamUpdateCondition = teamCompanyForUpdateOperation!.Director != null ?
-            teamCompanyForUpdateOperation!.Director.Id == leaderId || teamCompanyForUpdateOperation.Managers.Exists(m => m.Id == leaderId) :
+        bool allowedTeamUpdateCondition = teamCompanyForUpdateOperation!.Director.Id == leaderId ||
             teamCompanyForUpdateOperation.Managers.Exists(m => m.Id == leaderId);
 
         if (!allowedTeamUpdateCondition)

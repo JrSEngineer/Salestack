@@ -1,5 +1,6 @@
 ﻿using Salestack.Entities.Teams;
 using Salestack.Entities.Users;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -19,10 +20,11 @@ namespace Salestack.Entities.Company
         public string Cnpj { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "You must provide a valid PhoneNumber."),
-         Length(minimumLength:8, maximumLength: 20)]
+         Length(minimumLength: 8, maximumLength: 20)]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        public SalestackDirector? Director { get; set; }
+        [Required(ErrorMessage = "Please provide the data of the company director."), DefaultValue(typeof(SalestackDirector))]
+        public SalestackDirector Director { get; set; } = null!;
 
         public Guid? DirectorId { get; set; }
 

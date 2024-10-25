@@ -26,7 +26,8 @@ public class CompaniesController : ControllerBase
             Name = data.Name,
             Cnpj = data.Cnpj,
             CompanyCode = data.CompanyCode,
-            PhoneNumber = data.PhoneNumber
+            PhoneNumber = data.PhoneNumber,
+            Director = data.Director
         };
 
         await _context.Company.AddAsync(newCompany);
