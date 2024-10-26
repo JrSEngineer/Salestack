@@ -1,0 +1,19 @@
+services:
+  database:
+    container_name: salestack_db
+    image: postgres:15-bullseye
+    ports:
+    - 5432:5432
+    environment:
+        - POSTGRES_USER=${USER}
+        - POSTGRES_PASSWORD=${PASSWORD}
+        - POSTGRES_DB=${DATABASE}
+  
+  salestack:
+    container_name: salestack_api
+    build:
+      context: .
+      dockerfile: Salestack/Dockerfile.prod
+    ports:
+      - 7000:7000
+      - 7001:7001
