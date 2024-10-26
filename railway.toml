@@ -1,0 +1,7 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Salestack/Dockerfile.prod"
+
+[deploy]
+startCommand = "dotnet Salestack.dll"
+restartPolicyType = "never"
