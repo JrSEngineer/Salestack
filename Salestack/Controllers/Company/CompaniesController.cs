@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Salestack.Data.Context;
 using Salestack.Entities.Company;
+using Salestack.Entities.Users;
+using Salestack.Enums;
 
 namespace Salestack.Controllers.Company;
 
@@ -20,14 +22,26 @@ public class CompaniesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateCompanyAsync(SalestackCompany data)
     {
+        var companyId = Guid.NewGuid();
+        var directorId = Guid.NewGuid();
+
         var newCompany = new SalestackCompany
         {
-            Id = Guid.NewGuid(),
+            Id = companyId,
             Name = data.Name,
             Cnpj = data.Cnpj,
             CompanyCode = data.CompanyCode,
             PhoneNumber = data.PhoneNumber,
-            Director = data.Director
+            DirectorId = directorId,
+            Director = new SalestackDirector
+            {
+                Id = directorId,
+                Name = data.Director.Name,
+                Email = data.Director.Email,
+                PhoneNumber = data.Director.PhoneNumber,
+                Occupation = CompanyOccupation.Director,
+                CompanyId = companyId,
+            }
         };
 
         await _context.Company.AddAsync(newCompany);
