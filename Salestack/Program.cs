@@ -27,6 +27,11 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+if (app.Environment.IsProduction())
+{
+    builder.WebHost.UseUrls("https://[::]:7001", "http://[::]:7000");
+}
+
 if (app.Environment.IsDevelopment())
 {
     var connectionString = builder.Configuration.GetSection("ConnectionStrings")
