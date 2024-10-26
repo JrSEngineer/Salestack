@@ -9,6 +9,19 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
+builder.Services.AddDbContext<SalestackDbContext>(options =>
+{
+    string host = Environment.GetEnvironmentVariable("HOST")!;
+    string port = Environment.GetEnvironmentVariable("DB_PORT")!;
+    string user = Environment.GetEnvironmentVariable("USER")!;
+    string password = Environment.GetEnvironmentVariable("PASSWORD")!;
+    string database = Environment.GetEnvironmentVariable("DATABASE")!;
+
+    var connectionString = $"Host={host}:{port};userid={user};password={password};Database={database}";
+
+    options.UseNpgsql(connectionString);
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -26,21 +39,6 @@ if (app.Environment.IsDevelopment())
 
     app.UseSwagger();
     app.UseSwaggerUI();
-}
-else
-{
-    builder.Services.AddDbContext<SalestackDbContext>(options =>
-    {
-        string host = Environment.GetEnvironmentVariable("HOST")!;
-        string port = Environment.GetEnvironmentVariable("DB_PORT")!;
-        string user = Environment.GetEnvironmentVariable("USER")!;
-        string password = Environment.GetEnvironmentVariable("PASSWORD")!;
-        string database = Environment.GetEnvironmentVariable("DATABASE")!;
-
-        var connectionString = $"Host={host}:{port};userid={user};password={password};Database={database}";
-
-        options.UseNpgsql(connectionString);
-    });
 }
 
 app.UseHttpsRedirection();
