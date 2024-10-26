@@ -15,19 +15,21 @@ public class TeamsController : ControllerBase
     }
 
 
-    [HttpPost("leaderId={leaderId}")]
-    public async Task<IActionResult> CreateTeamAsync(Guid leaderId, SalestackTeam data)
+    [HttpPost("companyId={companyId}/leaderId={leaderId}")]
+    public async Task<IActionResult> CreateTeamAsync(Guid companyId, Guid leaderId, SalestackTeam data)
     {
         var newTeamCompany = await _context.Company
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
             .Include(c => c.Director)
             .Include(c => c.Managers)
-            .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
+            .FirstOrDefaultAsync(c => c.Id == companyId);
 
         if (newTeamCompany == null)
         {
             return NotFound(new
             {
-                Message = $"Company with id {data.CompanyId} not found."
+                Message = $"Company with id {companyId} not found."
             });
         }
 
@@ -37,14 +39,17 @@ public class TeamsController : ControllerBase
 
         if (!allowedTeamCreationCondition)
         {
-            return BadRequest("Your new team must have at least one director or manager as leader.");
+            return BadRequest(new
+            {
+                Message = "Your new team must have at least one director or manager as leader."
+            });
         }
 
         var newTeam = new SalestackTeam
         {
             Id = Guid.NewGuid(),
             Name = data.Name,
-            CompanyId = data.CompanyId,
+            CompanyId = companyId,
             DirectorId = newTeamCompany.Director.Id == leaderId ? leaderId : data.DirectorId,
             ManagerId = newTeamCompany.Managers.Exists(m => m.Id == leaderId) ? leaderId : data.ManagerId,
             Sellers = data.Sellers,
@@ -62,6 +67,8 @@ public class TeamsController : ControllerBase
     public async Task<IActionResult> GetAllTeamsFromCompanyAsync(Guid companyId)
     {
         var currentCompany = await _context.Company
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
             .Include(c => c.Teams)
             .FirstOrDefaultAsync(c => c.Id == companyId);
 
@@ -81,6 +88,7 @@ public class TeamsController : ControllerBase
     public async Task<IActionResult> GetTeamByIdAsync(Guid id)
     {
         var selectedTeam = await _context.Team
+            .IgnoreAutoIncludes()
             .AsNoTracking()
             .Include(t => t.Sellers)
             .FirstOrDefaultAsync(t => t.Id == id);
@@ -95,8 +103,8 @@ public class TeamsController : ControllerBase
     }
 
 
-    [HttpPatch("{id}/leaderId={leaderId}")]
-    public async Task<IActionResult> UpdateTeamAsync(Guid id, SalestackTeam data, Guid leaderId)
+    [HttpPatch("companyId={companyId}/leaderId={leaderId}/{id}")]
+    public async Task<IActionResult> UpdateTeamAsync(Guid companyId, Guid leaderId, Guid id, SalestackTeam data)
     {
         var selectedTeamForUpdateOperation = await _context.Team.FindAsync(id);
 
@@ -109,9 +117,11 @@ public class TeamsController : ControllerBase
         }
 
         var teamCompanyForUpdateOperation = await _context.Company
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
             .Include(c => c.Director)
             .Include(c => c.Managers)
-            .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
+            .FirstOrDefaultAsync(c => c.Id == companyId);
 
         bool allowedTeamUpdateCondition = teamCompanyForUpdateOperation!.Director.Id == leaderId ||
             teamCompanyForUpdateOperation.Managers.Exists(m => m.Id == leaderId);
@@ -144,9 +154,14 @@ public class TeamsController : ControllerBase
             });
         }
 
-        var teamCompanyForDeleteOperation = await _context.Company.FindAsync(selectedTeamForDeleteOperation.CompanyId);
+        var teamCompanyForDeleteOperation = await _context.Company
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
+            .Include(c => c.Director)
+            .Include(c => c.Managers)
+            .FirstOrDefaultAsync(c => c.Id == selectedTeamForDeleteOperation.CompanyId);
 
-        bool allowedTeamDeleteCondition = teamCompanyForDeleteOperation!.DirectorId == leaderId ||
+        bool allowedTeamDeleteCondition = teamCompanyForDeleteOperation!.Director.Id == leaderId ||
             teamCompanyForDeleteOperation.Managers.Exists(m => m.Id == leaderId);
 
         if (!allowedTeamDeleteCondition)

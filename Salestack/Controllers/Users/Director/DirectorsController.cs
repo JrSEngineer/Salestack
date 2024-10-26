@@ -17,16 +17,18 @@ public class DirectorsController : ControllerBase
         _context = context;
     }
 
-    [HttpPost("companyCode={companyCode}")]
-    public async Task<IActionResult> CreateDirectorAsync(SalestackDirector data, string companyCode)
+    [HttpPost("companyId={companyId}/companyCode={companyCode}")]
+    public async Task<IActionResult> CreateDirectorAsync(Guid companyId, SalestackDirector data, string companyCode)
     {
         var companyForDirectorCreateOperation = await _context.Company
-            .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == companyId);
 
         if (companyForDirectorCreateOperation == null)
             return BadRequest(new
             {
-                Message = $"No company found with id '{data.CompanyId}'."
+                Message = $"No company found with id '{companyId}'."
             });
 
         if (companyForDirectorCreateOperation.CompanyCode != companyCode)
@@ -42,7 +44,7 @@ public class DirectorsController : ControllerBase
             Email = data.Email,
             PhoneNumber = data.PhoneNumber,
             Occupation = CompanyOccupation.Director,
-            CompanyId = data.CompanyId
+            CompanyId = companyId
         };
 
         await _context.Director.AddAsync(newDirector);
@@ -76,8 +78,8 @@ public class DirectorsController : ControllerBase
         return Ok(selectedDirector);
     }
 
-    [HttpPatch("{id}/companyCode={companyCode}")]
-    public async Task<IActionResult> UpdateDirectorAsync(Guid id, SalestackDirector data, string companyCode)
+    [HttpPatch("companyId={companyId}/companyCode={companyCode}/{id}")]
+    public async Task<IActionResult> UpdateDirectorAsync(Guid companyId, string companyCode, Guid id, SalestackDirector data)
     {
         var selectedDirector = await _context.Director.FindAsync(id);
 
@@ -88,7 +90,9 @@ public class DirectorsController : ControllerBase
             });
 
         var companyForDirectorUpdateOperation = await _context.Company
-            .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == companyId);
 
         if (companyForDirectorUpdateOperation!.CompanyCode != companyCode)
             return BadRequest(new
@@ -105,8 +109,8 @@ public class DirectorsController : ControllerBase
         return Ok(selectedDirector);
     }
 
-    [HttpDelete("{id}/companyCode={companyCode}")]
-    public async Task<IActionResult> DeleteDirectorAsync(Guid id, string companyCode)
+    [HttpDelete("companyId={companyId}/companyCode={companyCode}/{id}")]
+    public async Task<IActionResult> DeleteDirectorAsync(Guid companyId, string companyCode, Guid id)
     {
         var selectedDirector = await _context.Director.FindAsync(id);
 
@@ -117,7 +121,9 @@ public class DirectorsController : ControllerBase
             });
 
         var companyFromWichDirectorWillBeDeleted = await _context.Company
-           .FirstOrDefaultAsync(c => c.Id == selectedDirector.CompanyId);
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
+           .FirstOrDefaultAsync(c => c.Id == companyId);
 
         if (companyFromWichDirectorWillBeDeleted!.CompanyCode != companyCode)
             return BadRequest(new

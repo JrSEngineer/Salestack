@@ -17,17 +17,19 @@ public class ManagersController : ControllerBase
         _context = context;
     }
 
-    [HttpPost("{directorId}")]
-    public async Task<IActionResult> CreateManagerAsync(SalestackManager data, Guid directorId)
+    [HttpPost("companyId={companyId}/directorId={directorId}")]
+    public async Task<IActionResult> CreateManagerAsync(Guid companyId, Guid directorId,SalestackManager data)
     {
         var newManagerCompany = await _context.Company
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
             .Include(c => c.Director)
-            .FirstOrDefaultAsync(c => c.Id == data.CompanyId);
+            .FirstOrDefaultAsync(c => c.Id == companyId);
 
         if (newManagerCompany == null)
             return NotFound(new
             {
-                Message = $"Company with id {data.CompanyId} not found."
+                Message = $"Company with id {companyId} not found."
             });
 
         var directorForManagerCreation = newManagerCompany.Director;
@@ -52,7 +54,7 @@ public class ManagersController : ControllerBase
             PhoneNumber = data.PhoneNumber,
             Occupation = CompanyOccupation.Manager,
             VerificationCode = data.VerificationCode,
-            CompanyId = data.CompanyId
+            CompanyId = companyId
         };
 
         await _context.Manager.AddAsync(newManager);
@@ -67,8 +69,9 @@ public class ManagersController : ControllerBase
     public async Task<IActionResult> GetComapanyManagersAsync(Guid companyId)
     {
         var selectedCompany = await _context.Company
-            .Include(c => c.Managers)
+            .IgnoreAutoIncludes()
             .AsNoTracking()
+            .Include(c => c.Managers)
             .FirstOrDefaultAsync(c => c.Id == companyId);
 
         if (selectedCompany == null)
@@ -87,7 +90,9 @@ public class ManagersController : ControllerBase
     public async Task<IActionResult> GetManagerByIdAsync(Guid id)
     {
         var selectedManager = await _context.Manager
+            .IgnoreAutoIncludes()
             .AsNoTracking()
+            .Include(m => m.Teams)
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (selectedManager == null)
@@ -136,6 +141,8 @@ public class ManagersController : ControllerBase
         }
 
         var managerCompany = await _context.Company
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
             .Include(c => c.Director)
             .FirstOrDefaultAsync(c => c.Id == selectedManagerForDeleteOperation.CompanyId);
 
