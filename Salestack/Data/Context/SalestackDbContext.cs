@@ -27,9 +27,13 @@ namespace Salestack.Data.Context
             builder.Entity<SalestackCompany>().HasMany(c => c.Sellers).WithOne(m => m.Company);
 
             builder.Entity<SalestackTeam>().HasOne(t => t.Company).WithMany(c => c.Teams);
+
+            builder.Entity<Authentication>().HasKey(a => new { a.UserId, a.Email });
+
         }
 
         public DbSet<SalestackCompany> Company { get; set; }
+        public DbSet<Authentication> Authentication { get; set; }
         public DbSet<SalestackDirector> Director { get; set; }
         public DbSet<SalestackManager> Manager { get; set; }
         public DbSet<SalestackSeller> Seller { get; set; }
