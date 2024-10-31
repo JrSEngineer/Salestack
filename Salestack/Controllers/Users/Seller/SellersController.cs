@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Salestack.Data.Context;
 using Salestack.Entities.Users;
 using Salestack.Enums;
+using System.IO;
 
 namespace Salestack.Controllers.Users.Seller;
 
@@ -44,15 +45,23 @@ public class SellersController : ControllerBase
             });
         }
 
+        Guid sellerId = Guid.NewGuid();
+
         var newSeller = new SalestackSeller
         {
             Id = Guid.NewGuid(),
             Name = data.Name,
-            Email = data.Email,
             PhoneNumber = data.PhoneNumber,
             Occupation = CompanyOccupation.Seller,
             CompanyId = companyId,
             TeamId = teamId,
+            Authentication = new Authentication
+            {
+                Email = data.Authentication.Email,
+                Password = data.Authentication.Password,
+                Occupation = CompanyOccupation.Seller,
+                UserId = sellerId
+            }
         };
 
         await _context.Seller.AddAsync(newSeller);
@@ -113,7 +122,6 @@ public class SellersController : ControllerBase
             });
 
         selectedSellerForUpdateOperation.Name = data.Name;
-        selectedSellerForUpdateOperation.Email = data.Email;
         selectedSellerForUpdateOperation.PhoneNumber = data.PhoneNumber;
 
         await _context.SaveChangesAsync();

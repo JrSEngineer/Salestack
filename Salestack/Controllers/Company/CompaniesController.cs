@@ -37,10 +37,10 @@ public class CompaniesController : ControllerBase
             {
                 Id = directorId,
                 Name = data.Director.Name,
-                Email = data.Director.Email,
                 PhoneNumber = data.Director.PhoneNumber,
                 Occupation = CompanyOccupation.Director,
                 CompanyId = companyId,
+                Authentication = data.Director.Authentication,
             }
         };
 

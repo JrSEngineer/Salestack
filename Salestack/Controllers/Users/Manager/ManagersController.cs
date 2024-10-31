@@ -46,15 +46,23 @@ public class ManagersController : ControllerBase
                 Message = "Please, provide a valid identifier for company director (directorId)."
             });
 
+        Guid managerId = Guid.NewGuid();
+
         var newManager = new SalestackManager
         {
             Id = Guid.NewGuid(),
             Name = data.Name,
-            Email = data.Email,
             PhoneNumber = data.PhoneNumber,
             Occupation = CompanyOccupation.Manager,
             VerificationCode = data.VerificationCode,
-            CompanyId = companyId
+            CompanyId = companyId,
+            Authentication = new Authentication
+            {
+                Email = data.Authentication.Email,
+                Password = data.Authentication.Password,
+                Occupation = CompanyOccupation.Manager,
+                UserId = managerId
+            }
         };
 
         await _context.Manager.AddAsync(newManager);
@@ -117,7 +125,6 @@ public class ManagersController : ControllerBase
             });
 
         selectedManager.Name = data.Name;
-        selectedManager.Email = data.Email;
         selectedManager.PhoneNumber = data.PhoneNumber;
         selectedManager.VerificationCode = data.VerificationCode;
 
