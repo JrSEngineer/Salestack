@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Salestack.Data.Config;
 using Salestack.Data.Context;
 using System.Text.Json.Serialization;
 
@@ -9,40 +10,43 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
-builder.Services.AddDbContext<SalestackDbContext>(options =>
+
+if (builder.Environment.IsDevelopment())
 {
-    string host = Environment.GetEnvironmentVariable("HOST")!;
-    string port = Environment.GetEnvironmentVariable("DB_PORT")!;
-    string user = Environment.GetEnvironmentVariable("USER")!;
-    string password = Environment.GetEnvironmentVariable("PASSWORD")!;
-    string database = Environment.GetEnvironmentVariable("DATABASE")!;
+    var settings = builder.Configuration.GetSection("Salestack").Get<SalestackSettings>();
 
-    var connectionString = $"Host={host}:{port};userid={user};password={password};Database={database}";
-
-    options.UseNpgsql(connectionString);
-});
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-if (app.Environment.IsProduction())
-{
-    builder.WebHost.UseUrls("http://[::]:7000");
-}
-
-if (app.Environment.IsDevelopment())
-{
-    var connectionString = builder.Configuration.GetSection("ConnectionStrings")
-                                            .GetValue<string>("SalestackDbConnectionString");
+    var connectionString = settings?.SalestackDbConnectionString;
 
     builder.Services.AddDbContext<SalestackDbContext>(options =>
     {
         options.UseNpgsql(connectionString);
     });
 
+    builder.Services.AddScoped<IDbContextFactory<SalestackDbContext>, SalestackDbContextFactory>();
+}
+
+if (builder.Environment.IsProduction())
+{
+    string connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "Some error has occurred.";
+
+    builder.Services.AddDbContext<SalestackDbContext>(options =>
+    {
+        options.UseNpgsql(connectionString);
+    });
+
+    builder.WebHost.UseUrls("http://[::]:7000");
+}
+
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
+
     app.UseSwaggerUI();
 }
 
