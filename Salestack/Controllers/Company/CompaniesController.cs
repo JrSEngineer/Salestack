@@ -40,7 +40,13 @@ public class CompaniesController : ControllerBase
                 PhoneNumber = data.Director.PhoneNumber,
                 Occupation = CompanyOccupation.Director,
                 CompanyId = companyId,
-                Authentication = data.Director.Authentication,
+                Authentication = new Authentication
+                {
+                    Email = data.Director.Authentication.Email,
+                    Password = data.Director.Authentication.Password,
+                    Occupation = CompanyOccupation.Director,
+                    UserId = directorId
+                },
             }
         };
 
@@ -57,7 +63,8 @@ public class CompaniesController : ControllerBase
     {
         var companies = await _context.Company
             .AsNoTracking()
-            .Include(c => c.Director).ToListAsync();
+            .Include(c => c.Director)
+            .ToListAsync();
 
         return Ok(companies);
     }
@@ -69,6 +76,7 @@ public class CompaniesController : ControllerBase
         var selectedCompany = await _context.Company
             .AsNoTracking()
             .Include(c => c.Director)
+            .ThenInclude(d => d.Authentication)
             .Include(c => c.Managers)
             .Include(c => c.Teams)
             .Include(c => c.Sellers)

@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Salestack.Data.Context;
 using Salestack.Entities.Users;
 using Salestack.Enums;
-using System.IO;
 
 namespace Salestack.Controllers.Users.Seller;
 

@@ -18,7 +18,7 @@ public class ManagersController : ControllerBase
     }
 
     [HttpPost("companyId={companyId}/directorId={directorId}")]
-    public async Task<IActionResult> CreateManagerAsync(Guid companyId, Guid directorId,SalestackManager data)
+    public async Task<IActionResult> CreateManagerAsync(Guid companyId, Guid directorId, SalestackManager data)
     {
         var newManagerCompany = await _context.Company
             .IgnoreAutoIncludes()
