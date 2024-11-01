@@ -9,11 +9,11 @@ using Salestack.Data.Context;
 
 #nullable disable
 
-namespace Salestack.Migrations
+namespace Salestack.Data.Migrations
 {
     [DbContext(typeof(SalestackDbContext))]
-    [Migration("20241023140649_AddingCompanyConstraintsForCNPJ")]
-    partial class AddingCompanyConstraintsForCNPJ
+    [Migration("20241031225910_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -91,18 +91,42 @@ namespace Salestack.Migrations
                     b.ToTable("Team");
                 });
 
+            modelBuilder.Entity("Salestack.Entities.Users.Authentication", b =>
+                {
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Occupation")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Email");
+
+                    b.ToTable("Authentication");
+                });
+
             modelBuilder.Entity("Salestack.Entities.Users.SalestackDirector", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Email")
+                    b.Property<string>("AuthenticationEmail")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -117,6 +141,8 @@ namespace Salestack.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AuthenticationEmail");
+
                     b.HasIndex("CompanyId")
                         .IsUnique();
 
@@ -129,12 +155,12 @@ namespace Salestack.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Email")
+                    b.Property<string>("AuthenticationEmail")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -153,6 +179,8 @@ namespace Salestack.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AuthenticationEmail");
+
                     b.HasIndex("CompanyId");
 
                     b.ToTable("Manager");
@@ -164,12 +192,12 @@ namespace Salestack.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Email")
+                    b.Property<string>("AuthenticationEmail")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -186,6 +214,8 @@ namespace Salestack.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AuthenticationEmail");
 
                     b.HasIndex("CompanyId");
 
@@ -207,7 +237,7 @@ namespace Salestack.Migrations
                         .HasForeignKey("DirectorId");
 
                     b.HasOne("Salestack.Entities.Users.SalestackManager", "Manager")
-                        .WithMany()
+                        .WithMany("Teams")
                         .HasForeignKey("ManagerId");
 
                     b.Navigation("Company");
@@ -219,28 +249,50 @@ namespace Salestack.Migrations
 
             modelBuilder.Entity("Salestack.Entities.Users.SalestackDirector", b =>
                 {
+                    b.HasOne("Salestack.Entities.Users.Authentication", "Authentication")
+                        .WithMany()
+                        .HasForeignKey("AuthenticationEmail")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Salestack.Entities.Company.SalestackCompany", "Company")
                         .WithOne("Director")
                         .HasForeignKey("Salestack.Entities.Users.SalestackDirector", "CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Authentication");
+
                     b.Navigation("Company");
                 });
 
             modelBuilder.Entity("Salestack.Entities.Users.SalestackManager", b =>
                 {
+                    b.HasOne("Salestack.Entities.Users.Authentication", "Authentication")
+                        .WithMany()
+                        .HasForeignKey("AuthenticationEmail")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Salestack.Entities.Company.SalestackCompany", "Company")
                         .WithMany("Managers")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Authentication");
+
                     b.Navigation("Company");
                 });
 
             modelBuilder.Entity("Salestack.Entities.Users.SalestackSeller", b =>
                 {
+                    b.HasOne("Salestack.Entities.Users.Authentication", "Authentication")
+                        .WithMany()
+                        .HasForeignKey("AuthenticationEmail")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Salestack.Entities.Company.SalestackCompany", "Company")
                         .WithMany("Sellers")
                         .HasForeignKey("CompanyId")
@@ -253,6 +305,8 @@ namespace Salestack.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Authentication");
+
                     b.Navigation("Company");
 
                     b.Navigation("Team");
@@ -260,7 +314,8 @@ namespace Salestack.Migrations
 
             modelBuilder.Entity("Salestack.Entities.Company.SalestackCompany", b =>
                 {
-                    b.Navigation("Director");
+                    b.Navigation("Director")
+                        .IsRequired();
 
                     b.Navigation("Managers");
 
@@ -275,6 +330,11 @@ namespace Salestack.Migrations
                 });
 
             modelBuilder.Entity("Salestack.Entities.Users.SalestackDirector", b =>
+                {
+                    b.Navigation("Teams");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Users.SalestackManager", b =>
                 {
                     b.Navigation("Teams");
                 });

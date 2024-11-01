@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Salestack.Migrations
+namespace Salestack.Data.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -11,6 +11,21 @@ namespace Salestack.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Authentication",
+                columns: table => new
+                {
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    Occupation = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Authentication", x => x.Email);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Company",
                 columns: table => new
@@ -34,13 +49,19 @@ namespace Salestack.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
-                    Occupation = table.Column<int>(type: "integer", nullable: false)
+                    Occupation = table.Column<int>(type: "integer", nullable: false),
+                    AuthenticationEmail = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Director", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Director_Authentication_AuthenticationEmail",
+                        column: x => x.AuthenticationEmail,
+                        principalTable: "Authentication",
+                        principalColumn: "Email",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Director_Company_CompanyId",
                         column: x => x.CompanyId,
@@ -57,13 +78,19 @@ namespace Salestack.Migrations
                     VerificationCode = table.Column<string>(type: "text", nullable: false),
                     CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
-                    Occupation = table.Column<int>(type: "integer", nullable: false)
+                    Occupation = table.Column<int>(type: "integer", nullable: false),
+                    AuthenticationEmail = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Manager", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Manager_Authentication_AuthenticationEmail",
+                        column: x => x.AuthenticationEmail,
+                        principalTable: "Authentication",
+                        principalColumn: "Email",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Manager_Company_CompanyId",
                         column: x => x.CompanyId,
@@ -111,13 +138,19 @@ namespace Salestack.Migrations
                     CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
                     TeamId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
-                    Occupation = table.Column<int>(type: "integer", nullable: false)
+                    Occupation = table.Column<int>(type: "integer", nullable: false),
+                    AuthenticationEmail = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Seller", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Seller_Authentication_AuthenticationEmail",
+                        column: x => x.AuthenticationEmail,
+                        principalTable: "Authentication",
+                        principalColumn: "Email",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Seller_Company_CompanyId",
                         column: x => x.CompanyId,
@@ -133,15 +166,42 @@ namespace Salestack.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Company_Cnpj",
+                table: "Company",
+                column: "Cnpj",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Company_PhoneNumber",
+                table: "Company",
+                column: "PhoneNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Director_AuthenticationEmail",
+                table: "Director",
+                column: "AuthenticationEmail");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Director_CompanyId",
                 table: "Director",
                 column: "CompanyId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Manager_AuthenticationEmail",
+                table: "Manager",
+                column: "AuthenticationEmail");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Manager_CompanyId",
                 table: "Manager",
                 column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Seller_AuthenticationEmail",
+                table: "Seller",
+                column: "AuthenticationEmail");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Seller_CompanyId",
@@ -183,6 +243,9 @@ namespace Salestack.Migrations
 
             migrationBuilder.DropTable(
                 name: "Manager");
+
+            migrationBuilder.DropTable(
+                name: "Authentication");
 
             migrationBuilder.DropTable(
                 name: "Company");
