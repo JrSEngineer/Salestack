@@ -1,8 +1,7 @@
-﻿using Salestack.Entities.Users;
-using Salestack.Enums;
+﻿using Salestack.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Salestack.Entities;
+namespace Salestack.Entities.Users;
 
 public abstract class SalestackBaseUser
 {

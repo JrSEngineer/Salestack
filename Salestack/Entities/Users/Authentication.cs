@@ -1,11 +1,11 @@
 ﻿using Salestack.Enums;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Salestack.Entities.Users;
 
 public class Authentication
 {
+    [Required(ErrorMessage = "You must provide a valid Email.")]
     public string Email { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "You must provide a valid Password.")]

@@ -1,4 +1,5 @@
-﻿using Salestack.Entities.Teams;
+﻿using Salestack.Entities.SaleTargets;
+using Salestack.Entities.Teams;
 using Salestack.Entities.Users;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -29,8 +30,13 @@ namespace Salestack.Entities.Company
 
         public List<SalestackManager> Managers { get; set; } = [];
 
+        public List<SalestackTeam> Teams { get; set; } = [];
+
         public List<SalestackSeller> Sellers { get; set; } = [];
 
-        public List<SalestackTeam> Teams { get; set; } = [];
+        public List<SalestackProduct> Products { get; set; } = [];
+
+        public List<SalestackService> Services { get; set; } = [];
+
     }
 }
