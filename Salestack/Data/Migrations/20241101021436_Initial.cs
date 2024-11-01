@@ -12,6 +12,24 @@ namespace Salestack.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Address",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Street = table.Column<string>(type: "text", nullable: false),
+                    City = table.Column<string>(type: "text", nullable: false),
+                    Number = table.Column<int>(type: "integer", nullable: false),
+                    State = table.Column<string>(type: "text", nullable: false),
+                    ZipCode = table.Column<string>(type: "text", nullable: false),
+                    Country = table.Column<string>(type: "text", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Address", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Authentication",
                 columns: table => new
                 {
@@ -40,6 +58,33 @@ namespace Salestack.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Company", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Customer",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: false),
+                    AddressId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SalestackCompanyId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customer", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Customer_Address_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Address",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Customer_Company_SalestackCompanyId",
+                        column: x => x.SalestackCompanyId,
+                        principalTable: "Company",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -97,6 +142,49 @@ namespace Salestack.Data.Migrations
                         principalTable: "Company",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Product",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductImage = table.Column<string>(type: "text", nullable: true),
+                    SalestackCompanyId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Product", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Product_Company_SalestackCompanyId",
+                        column: x => x.SalestackCompanyId,
+                        principalTable: "Company",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Service",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    SalestackCompanyId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Service", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Service_Company_SalestackCompanyId",
+                        column: x => x.SalestackCompanyId,
+                        principalTable: "Company",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -178,6 +266,16 @@ namespace Salestack.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Customer_AddressId",
+                table: "Customer",
+                column: "AddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Customer_SalestackCompanyId",
+                table: "Customer",
+                column: "SalestackCompanyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Director_AuthenticationEmail",
                 table: "Director",
                 column: "AuthenticationEmail");
@@ -199,6 +297,11 @@ namespace Salestack.Data.Migrations
                 column: "CompanyId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Product_SalestackCompanyId",
+                table: "Product",
+                column: "SalestackCompanyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Seller_AuthenticationEmail",
                 table: "Seller",
                 column: "AuthenticationEmail");
@@ -212,6 +315,11 @@ namespace Salestack.Data.Migrations
                 name: "IX_Seller_TeamId",
                 table: "Seller",
                 column: "TeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Service_SalestackCompanyId",
+                table: "Service",
+                column: "SalestackCompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Team_CompanyId",
@@ -233,7 +341,19 @@ namespace Salestack.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Customer");
+
+            migrationBuilder.DropTable(
+                name: "Product");
+
+            migrationBuilder.DropTable(
                 name: "Seller");
+
+            migrationBuilder.DropTable(
+                name: "Service");
+
+            migrationBuilder.DropTable(
+                name: "Address");
 
             migrationBuilder.DropTable(
                 name: "Team");

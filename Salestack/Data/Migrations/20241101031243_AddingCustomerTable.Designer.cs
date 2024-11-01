@@ -12,8 +12,8 @@ using Salestack.Data.Context;
 namespace Salestack.Data.Migrations
 {
     [DbContext(typeof(SalestackDbContext))]
-    [Migration("20241101002132_AddingProductAndServiceTables")]
-    partial class AddingProductAndServiceTables
+    [Migration("20241101031243_AddingCustomerTable")]
+    partial class AddingCustomerTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,6 +61,75 @@ namespace Salestack.Data.Migrations
                     b.ToTable("Company");
                 });
 
+            modelBuilder.Entity("Salestack.Entities.Customers.CustomerAddress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ZipCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Address");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Customers.SalestackCustomer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AddressId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("SalestackCompanyId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddressId");
+
+                    b.HasIndex("SalestackCompanyId");
+
+                    b.ToTable("Customer");
+                });
+
             modelBuilder.Entity("Salestack.Entities.SaleTargets.SalestackProduct", b =>
                 {
                     b.Property<Guid>("Id")
@@ -84,9 +153,12 @@ namespace Salestack.Data.Migrations
                     b.Property<string>("ProductImage")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("SalestackCompanyId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("CompanyId");
+                    b.HasIndex("SalestackCompanyId");
 
                     b.ToTable("Product");
                 });
@@ -111,9 +183,12 @@ namespace Salestack.Data.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
+                    b.Property<Guid?>("SalestackCompanyId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("CompanyId");
+                    b.HasIndex("SalestackCompanyId");
 
                     b.ToTable("Service");
                 });
@@ -281,26 +356,33 @@ namespace Salestack.Data.Migrations
                     b.ToTable("Seller");
                 });
 
-            modelBuilder.Entity("Salestack.Entities.SaleTargets.SalestackProduct", b =>
+            modelBuilder.Entity("Salestack.Entities.Customers.SalestackCustomer", b =>
                 {
-                    b.HasOne("Salestack.Entities.Company.SalestackCompany", "Company")
-                        .WithMany("Products")
-                        .HasForeignKey("CompanyId")
+                    b.HasOne("Salestack.Entities.Customers.CustomerAddress", "Address")
+                        .WithMany()
+                        .HasForeignKey("AddressId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Company");
+                    b.HasOne("Salestack.Entities.Company.SalestackCompany", null)
+                        .WithMany("Customers")
+                        .HasForeignKey("SalestackCompanyId");
+
+                    b.Navigation("Address");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.SaleTargets.SalestackProduct", b =>
+                {
+                    b.HasOne("Salestack.Entities.Company.SalestackCompany", null)
+                        .WithMany("Products")
+                        .HasForeignKey("SalestackCompanyId");
                 });
 
             modelBuilder.Entity("Salestack.Entities.SaleTargets.SalestackService", b =>
                 {
-                    b.HasOne("Salestack.Entities.Company.SalestackCompany", "Company")
+                    b.HasOne("Salestack.Entities.Company.SalestackCompany", null)
                         .WithMany("Services")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Company");
+                        .HasForeignKey("SalestackCompanyId");
                 });
 
             modelBuilder.Entity("Salestack.Entities.Teams.SalestackTeam", b =>
@@ -393,6 +475,8 @@ namespace Salestack.Data.Migrations
 
             modelBuilder.Entity("Salestack.Entities.Company.SalestackCompany", b =>
                 {
+                    b.Navigation("Customers");
+
                     b.Navigation("Director")
                         .IsRequired();
 

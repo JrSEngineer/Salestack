@@ -1,6 +1,4 @@
-﻿using Salestack.Entities.Company;
-
-namespace Salestack.Entities.SaleTargets;
+﻿namespace Salestack.Entities.SaleTargets;
 
 public abstract class SalestackBaseSaleTarget
 {
@@ -22,6 +20,5 @@ public abstract class SalestackBaseSaleTarget
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal Price { get; set; }
-    public SalestackCompany? Company { get; set; }
     public Guid CompanyId { get; set; }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Salestack.Entities.Company;
+using Salestack.Entities.Customers;
 using Salestack.Entities.SaleTargets;
 using Salestack.Entities.Teams;
 using Salestack.Entities.Users;
@@ -33,6 +34,8 @@ namespace Salestack.Data.Context
 
             builder.Entity<SalestackCompany>().HasMany(t => t.Services);
 
+            builder.Entity<SalestackCompany>().HasMany(t => t.Customers);
+
             builder.Entity<Authentication>().HasKey(a => a.Email);
 
             builder.Entity<SalestackDirector>().HasOne(d => d.Authentication);
@@ -50,5 +53,7 @@ namespace Salestack.Data.Context
         public DbSet<SalestackTeam> Team { get; set; }
         public DbSet<SalestackProduct> Product { get; set; }
         public DbSet<SalestackService> Service { get; set; }
+        public DbSet<SalestackCustomer> Customer { get; set; }
+        public DbSet<CustomerAddress> Address { get; set; }
     }
 }
