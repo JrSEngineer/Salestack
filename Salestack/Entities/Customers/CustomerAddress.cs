@@ -18,8 +18,12 @@ public class CustomerAddress
 
     public Guid CustomerId { get; set; }
 
+    public double Lat { get; set; }
+
+    public double Long { get; set; }
+
     public CustomerAddress()
     {
-        
+
     }
 }
