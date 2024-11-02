@@ -38,4 +38,6 @@ public abstract class SalestackBaseUser
 
     [Required(ErrorMessage = "You must provide valid authentication values.")]
     public Authentication Authentication { get; set; }
+
+    public UserHierarchy Hierarchy { get; set; }
 }

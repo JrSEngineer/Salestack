@@ -56,6 +56,7 @@ public class ManagersController : ControllerBase
             Occupation = CompanyOccupation.Manager,
             VerificationCode = data.VerificationCode,
             CompanyId = companyId,
+            Hierarchy = UserHierarchy.Manager,
             Authentication = new Authentication
             {
                 Email = data.Authentication.Email,

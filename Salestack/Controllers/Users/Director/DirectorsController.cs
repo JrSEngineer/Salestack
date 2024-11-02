@@ -46,6 +46,7 @@ public class DirectorsController : ControllerBase
             PhoneNumber = data.PhoneNumber,
             Occupation = CompanyOccupation.Director,
             CompanyId = companyId,
+            Hierarchy = UserHierarchy.Director,
             Authentication = new Authentication
             {
                 Email = data.Authentication.Email,

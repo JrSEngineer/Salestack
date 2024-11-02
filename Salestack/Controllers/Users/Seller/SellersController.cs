@@ -54,6 +54,7 @@ public class SellersController : ControllerBase
             Occupation = CompanyOccupation.Seller,
             CompanyId = companyId,
             TeamId = teamId,
+            Hierarchy = UserHierarchy.Seller,
             Authentication = new Authentication
             {
                 Email = data.Authentication.Email,
