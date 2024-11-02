@@ -66,19 +66,22 @@ public class TeamsController : ControllerBase
     [HttpGet("companyId={companyId}")]
     public async Task<IActionResult> GetAllTeamsFromCompanyAsync(Guid companyId)
     {
-        var currentCompany = await _context.Company
-            .IgnoreAutoIncludes()
-            .AsNoTracking()
-            .Include(c => c.Teams)
-            .FirstOrDefaultAsync(c => c.Id == companyId);
+        var selectedCompany = await _context.Company
+          .IgnoreAutoIncludes()
+          .AsNoTracking()
+          .FirstOrDefaultAsync(c => c.Id == companyId);
 
-        if (currentCompany == null)
+        if (selectedCompany == null)
             return NotFound(new
             {
                 Message = $"Company with id {companyId} not found."
             });
 
-        var teams = currentCompany.Teams;
+        var teams = await _context.Team
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
+            .Where(c => c.CompanyId == selectedCompany.Id)
+            .ToListAsync();
 
         return Ok(teams);
     }
