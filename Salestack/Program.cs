@@ -33,7 +33,7 @@ if (builder.Environment.IsProduction())
         options.UseNpgsql(connectionString);
     });
 
-    builder.WebHost.UseUrls("http://[::]:7000");
+    builder.WebHost.UseUrls("https://[::]:7001;http://[::]:7000");
 }
 
 builder.Services.AddEndpointsApiExplorer();
