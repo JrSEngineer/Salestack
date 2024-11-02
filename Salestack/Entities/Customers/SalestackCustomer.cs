@@ -1,4 +1,6 @@
-﻿namespace Salestack.Entities.Customers;
+﻿using Salestack.Entities.Sales;
+
+namespace Salestack.Entities.Customers;
 
 public class SalestackCustomer
 {
@@ -14,8 +16,10 @@ public class SalestackCustomer
 
     public Guid CompanyId { get; set; }
 
+    public List<SalestackBudget> Budgets { get; set; } = [];
+
     public SalestackCustomer()
     {
-        
+
     }
 }

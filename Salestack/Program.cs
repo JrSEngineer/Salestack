@@ -10,7 +10,6 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
-
 if (builder.Environment.IsDevelopment())
 {
     var settings = builder.Configuration.GetSection("Salestack").Get<SalestackSettings>();
