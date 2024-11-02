@@ -75,14 +75,7 @@ public class CompaniesController : ControllerBase
     {
         var selectedCompany = await _context.Company
             .AsNoTracking()
-            .Include(c => c.Managers)
-            .Include(c => c.Teams)
-            .Include(c => c.Sellers)
-            .Include(c => c.Products)
-            .Include(c => c.Services)
-            .Include(c => c.Customers)
-            .Include(c => c.Director)
-            .ThenInclude(d => d.Authentication)
+            .IgnoreAutoIncludes()
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (selectedCompany == null)
