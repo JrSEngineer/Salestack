@@ -12,8 +12,8 @@ using Salestack.Data.Context;
 namespace Salestack.Data.Migrations
 {
     [DbContext(typeof(SalestackDbContext))]
-    [Migration("20241101031243_AddingCustomerTable")]
-    partial class AddingCustomerTable
+    [Migration("20241102032330_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -130,6 +130,58 @@ namespace Salestack.Data.Migrations
                     b.ToTable("Customer");
                 });
 
+            modelBuilder.Entity("Salestack.Entities.Joins.SalestackBudgetProduct", b =>
+                {
+                    b.Property<Guid>("BudgetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("SalestackBudgetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("BudgetId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SalestackBudgetId");
+
+                    b.ToTable("BudgetProduct");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Joins.SalestackBudgetService", b =>
+                {
+                    b.Property<Guid>("BudgetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("SalestackBudgetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("BudgetId", "ServiceId");
+
+                    b.HasIndex("SalestackBudgetId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("BudgetService");
+                });
+
             modelBuilder.Entity("Salestack.Entities.SaleTargets.SalestackProduct", b =>
                 {
                     b.Property<Guid>("Id")
@@ -191,6 +243,57 @@ namespace Salestack.Data.Migrations
                     b.HasIndex("SalestackCompanyId");
 
                     b.ToTable("Service");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Sales.SalestackBudget", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SalestackCustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalBudgetPrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SalestackCustomerId");
+
+                    b.ToTable("Budget");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Sales.SalestackOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BudgetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalOrderPrice")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Order");
                 });
 
             modelBuilder.Entity("Salestack.Entities.Teams.SalestackTeam", b =>
@@ -371,6 +474,36 @@ namespace Salestack.Data.Migrations
                     b.Navigation("Address");
                 });
 
+            modelBuilder.Entity("Salestack.Entities.Joins.SalestackBudgetProduct", b =>
+                {
+                    b.HasOne("Salestack.Entities.SaleTargets.SalestackProduct", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Salestack.Entities.Sales.SalestackBudget", null)
+                        .WithMany("Products")
+                        .HasForeignKey("SalestackBudgetId");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Joins.SalestackBudgetService", b =>
+                {
+                    b.HasOne("Salestack.Entities.Sales.SalestackBudget", null)
+                        .WithMany("Services")
+                        .HasForeignKey("SalestackBudgetId");
+
+                    b.HasOne("Salestack.Entities.SaleTargets.SalestackService", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("Salestack.Entities.SaleTargets.SalestackProduct", b =>
                 {
                     b.HasOne("Salestack.Entities.Company.SalestackCompany", null)
@@ -383,6 +516,13 @@ namespace Salestack.Data.Migrations
                     b.HasOne("Salestack.Entities.Company.SalestackCompany", null)
                         .WithMany("Services")
                         .HasForeignKey("SalestackCompanyId");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Sales.SalestackBudget", b =>
+                {
+                    b.HasOne("Salestack.Entities.Customers.SalestackCustomer", null)
+                        .WithMany("Budgets")
+                        .HasForeignKey("SalestackCustomerId");
                 });
 
             modelBuilder.Entity("Salestack.Entities.Teams.SalestackTeam", b =>
@@ -489,6 +629,18 @@ namespace Salestack.Data.Migrations
                     b.Navigation("Services");
 
                     b.Navigation("Teams");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Customers.SalestackCustomer", b =>
+                {
+                    b.Navigation("Budgets");
+                });
+
+            modelBuilder.Entity("Salestack.Entities.Sales.SalestackBudget", b =>
+                {
+                    b.Navigation("Products");
+
+                    b.Navigation("Services");
                 });
 
             modelBuilder.Entity("Salestack.Entities.Teams.SalestackTeam", b =>

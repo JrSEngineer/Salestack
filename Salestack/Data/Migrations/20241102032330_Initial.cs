@@ -61,6 +61,20 @@ namespace Salestack.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Order",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    BudgetId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    TotalOrderPrice = table.Column<decimal>(type: "numeric", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Order", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Customer",
                 columns: table => new
                 {
@@ -188,6 +202,28 @@ namespace Salestack.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Budget",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TotalBudgetPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrderId = table.Column<Guid>(type: "uuid", nullable: true),
+                    SalestackCustomerId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Budget", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Budget_Customer_SalestackCustomerId",
+                        column: x => x.SalestackCustomerId,
+                        principalTable: "Customer",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Team",
                 columns: table => new
                 {
@@ -216,6 +252,58 @@ namespace Salestack.Data.Migrations
                         column: x => x.ManagerId,
                         principalTable: "Manager",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BudgetProduct",
+                columns: table => new
+                {
+                    BudgetId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Amount = table.Column<int>(type: "integer", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    SalestackBudgetId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BudgetProduct", x => new { x.BudgetId, x.ProductId });
+                    table.ForeignKey(
+                        name: "FK_BudgetProduct_Budget_SalestackBudgetId",
+                        column: x => x.SalestackBudgetId,
+                        principalTable: "Budget",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_BudgetProduct_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BudgetService",
+                columns: table => new
+                {
+                    BudgetId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ServiceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Amount = table.Column<int>(type: "integer", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    SalestackBudgetId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BudgetService", x => new { x.BudgetId, x.ServiceId });
+                    table.ForeignKey(
+                        name: "FK_BudgetService_Budget_SalestackBudgetId",
+                        column: x => x.SalestackBudgetId,
+                        principalTable: "Budget",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_BudgetService_Service_ServiceId",
+                        column: x => x.ServiceId,
+                        principalTable: "Service",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -252,6 +340,31 @@ namespace Salestack.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Budget_SalestackCustomerId",
+                table: "Budget",
+                column: "SalestackCustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BudgetProduct_ProductId",
+                table: "BudgetProduct",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BudgetProduct_SalestackBudgetId",
+                table: "BudgetProduct",
+                column: "SalestackBudgetId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BudgetService_SalestackBudgetId",
+                table: "BudgetService",
+                column: "SalestackBudgetId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BudgetService_ServiceId",
+                table: "BudgetService",
+                column: "ServiceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Company_Cnpj",
@@ -341,28 +454,40 @@ namespace Salestack.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Customer");
+                name: "BudgetProduct");
 
             migrationBuilder.DropTable(
-                name: "Product");
+                name: "BudgetService");
+
+            migrationBuilder.DropTable(
+                name: "Order");
 
             migrationBuilder.DropTable(
                 name: "Seller");
 
             migrationBuilder.DropTable(
+                name: "Product");
+
+            migrationBuilder.DropTable(
+                name: "Budget");
+
+            migrationBuilder.DropTable(
                 name: "Service");
 
             migrationBuilder.DropTable(
-                name: "Address");
+                name: "Team");
 
             migrationBuilder.DropTable(
-                name: "Team");
+                name: "Customer");
 
             migrationBuilder.DropTable(
                 name: "Director");
 
             migrationBuilder.DropTable(
                 name: "Manager");
+
+            migrationBuilder.DropTable(
+                name: "Address");
 
             migrationBuilder.DropTable(
                 name: "Authentication");
