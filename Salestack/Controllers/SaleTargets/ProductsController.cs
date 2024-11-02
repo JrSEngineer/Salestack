@@ -21,7 +21,6 @@ namespace Salestack.Controllers.SaleTargets
         public async Task<IActionResult> CreateProductAsync(Guid companyId, Guid stcreatorId, SalestackProduct data)
         {
             var company = await _context.Company
-                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == companyId);
 
             if (company == null)
@@ -40,6 +39,7 @@ namespace Salestack.Controllers.SaleTargets
             };
 
             await _context.Product.AddAsync(newProduct);
+
             await _context.SaveChangesAsync();
 
             return Created("salestack-api", newProduct);
@@ -48,6 +48,16 @@ namespace Salestack.Controllers.SaleTargets
         [HttpGet("companyId={companyId}")]
         public async Task<IActionResult> GetProductsByCompanyAsync(Guid companyId)
         {
+            var company = await _context.Company.FindAsync(companyId);
+
+            if (company == null)
+            {
+                return NotFound(new
+                {
+                    Message = $"No Company with id {companyId}."
+                });
+            }
+
             var products = await _context.Product
                 .Where(p => p.CompanyId == companyId)
                 .ToListAsync();

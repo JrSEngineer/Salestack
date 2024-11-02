@@ -21,7 +21,6 @@ namespace Salestack.Controllers.SaleTargets
         public async Task<IActionResult> CreateServiceAsync(Guid companyId, Guid stcreatorId, SalestackService data)
         {
             var company = await _context.Company
-                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == companyId);
 
             if (company == null)
@@ -48,6 +47,16 @@ namespace Salestack.Controllers.SaleTargets
         [HttpGet("companyId={companyId}")]
         public async Task<IActionResult> GetServicesByCompanyAsync(Guid companyId)
         {
+            var company = await _context.Company.FindAsync(companyId);
+
+            if (company == null)
+            {
+                return NotFound(new
+                {
+                    Message = $"No Company with id {companyId}."
+                });
+            }
+
             var services = await _context.Service
                 .Where(s => s.CompanyId == companyId)
                 .ToListAsync();
