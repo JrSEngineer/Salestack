@@ -77,10 +77,9 @@ public class ManagersController : ControllerBase
     public async Task<IActionResult> GetComapanyManagersAsync(Guid companyId)
     {
         var selectedCompany = await _context.Company
-            .IgnoreAutoIncludes()
-            .AsNoTracking()
-            .Include(c => c.Managers)
-            .FirstOrDefaultAsync(c => c.Id == companyId);
+          .IgnoreAutoIncludes()
+          .AsNoTracking()
+          .FirstOrDefaultAsync(c => c.Id == companyId);
 
         if (selectedCompany == null)
             return NotFound(new
@@ -88,7 +87,11 @@ public class ManagersController : ControllerBase
                 Message = $"Company with id {companyId} not found."
             });
 
-        var managers = selectedCompany.Managers;
+        var managers = await _context.Manager
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
+            .Where(s => s.CompanyId == selectedCompany.Id)
+            .ToListAsync();
 
         return Ok(managers);
     }

@@ -73,10 +73,10 @@ public class SellersController : ControllerBase
     [HttpGet("companyId={companyId}")]
     public async Task<IActionResult> GetCompanySellersAsync(Guid companyId)
     {
+
         var selectedCompany = await _context.Company
             .IgnoreAutoIncludes()
             .AsNoTracking()
-            .Include(c => c.Sellers)
             .FirstOrDefaultAsync(c => c.Id == companyId);
 
         if (selectedCompany == null)
@@ -85,7 +85,11 @@ public class SellersController : ControllerBase
                 Message = $"Company with id {companyId} not found."
             });
 
-        var companySellers = selectedCompany.Sellers;
+        var companySellers = await _context.Seller
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
+            .Where(s => s.CompanyId == selectedCompany.Id)
+            .ToListAsync();
 
         return Ok(companySellers);
     }
@@ -133,10 +137,11 @@ public class SellersController : ControllerBase
     {
         var selectedCompanyToSellerTeamChange = await _context.Company
             .IgnoreAutoIncludes()
-            .AsNoTracking()
             .Include(c => c.Director)
             .Include(c => c.Managers)
             .Include(c => c.Teams)
+            .ThenInclude(t => t.Sellers)
+            .IgnoreAutoIncludes()
             .FirstOrDefaultAsync(c => c.Id == companyId);
 
         if (selectedCompanyToSellerTeamChange == null)
@@ -144,7 +149,7 @@ public class SellersController : ControllerBase
             return NotFound($"Company with id {companyId} not found.");
         }
 
-        bool allowedConditionToSellerTeamTransfferOperation = 
+        bool allowedConditionToSellerTeamTransfferOperation =
             selectedCompanyToSellerTeamChange.Teams.Exists(t => t.DirectorId == leaderId) ||
             selectedCompanyToSellerTeamChange.Teams.Exists(t => t.ManagerId == leaderId);
 
@@ -166,7 +171,7 @@ public class SellersController : ControllerBase
             });
         }
 
-        bool sellerAlreadyPresentInTheCurrentTeam = newSellerTeam.Sellers.Exists(t => t.Id == sellerId);
+        bool sellerAlreadyPresentInTheCurrentTeam = newSellerTeam.Sellers.Exists(s => s.Id == sellerId);
 
         if (sellerAlreadyPresentInTheCurrentTeam)
         {

@@ -55,6 +55,8 @@ public class DirectorsController : ControllerBase
             }
         };
 
+        companyForDirectorCreateOperation.DirectorId = directorId;
+
         await _context.Director.AddAsync(newDirector);
 
         await _context.SaveChangesAsync();
