@@ -112,13 +112,7 @@ namespace Salestack.Controllers.Customers
 
             customer.Name = data.Name;
             customer.PhoneNumber = data.PhoneNumber;
-
-            customer.Address.Street = data.Address.Street;
-            customer.Address.Number = data.Address.Number;
-            customer.Address.City = data.Address.City;
-            customer.Address.State = data.Address.State;
-            customer.Address.Country = data.Address.Country;
-            customer.Address.ZipCode = data.Address.ZipCode;
+            customer.Address = data.Address;
 
 
             await _context.SaveChangesAsync();
