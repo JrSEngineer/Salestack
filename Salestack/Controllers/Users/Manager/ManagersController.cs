@@ -18,7 +18,7 @@ public class ManagersController : ControllerBase
     }
 
     [HttpPost("companyId={companyId}/directorId={directorId}")]
-    public async Task<IActionResult> CreateManagerAsync(Guid companyId, Guid directorId,SalestackManager data)
+    public async Task<IActionResult> CreateManagerAsync(Guid companyId, Guid directorId, SalestackManager data)
     {
         var newManagerCompany = await _context.Company
             .IgnoreAutoIncludes()
@@ -46,15 +46,24 @@ public class ManagersController : ControllerBase
                 Message = "Please, provide a valid identifier for company director (directorId)."
             });
 
+        Guid managerId = Guid.NewGuid();
+
         var newManager = new SalestackManager
         {
             Id = Guid.NewGuid(),
             Name = data.Name,
-            Email = data.Email,
             PhoneNumber = data.PhoneNumber,
             Occupation = CompanyOccupation.Manager,
             VerificationCode = data.VerificationCode,
-            CompanyId = companyId
+            CompanyId = companyId,
+            Hierarchy = UserHierarchy.Manager,
+            Authentication = new Authentication
+            {
+                Email = data.Authentication.Email,
+                Password = data.Authentication.Password,
+                Occupation = CompanyOccupation.Manager,
+                UserId = managerId
+            }
         };
 
         await _context.Manager.AddAsync(newManager);
@@ -69,10 +78,9 @@ public class ManagersController : ControllerBase
     public async Task<IActionResult> GetComapanyManagersAsync(Guid companyId)
     {
         var selectedCompany = await _context.Company
-            .IgnoreAutoIncludes()
-            .AsNoTracking()
-            .Include(c => c.Managers)
-            .FirstOrDefaultAsync(c => c.Id == companyId);
+          .IgnoreAutoIncludes()
+          .AsNoTracking()
+          .FirstOrDefaultAsync(c => c.Id == companyId);
 
         if (selectedCompany == null)
             return NotFound(new
@@ -80,7 +88,11 @@ public class ManagersController : ControllerBase
                 Message = $"Company with id {companyId} not found."
             });
 
-        var managers = selectedCompany.Managers;
+        var managers = await _context.Manager
+            .IgnoreAutoIncludes()
+            .AsNoTracking()
+            .Where(s => s.CompanyId == selectedCompany.Id)
+            .ToListAsync();
 
         return Ok(managers);
     }
@@ -117,7 +129,6 @@ public class ManagersController : ControllerBase
             });
 
         selectedManager.Name = data.Name;
-        selectedManager.Email = data.Email;
         selectedManager.PhoneNumber = data.PhoneNumber;
         selectedManager.VerificationCode = data.VerificationCode;
 

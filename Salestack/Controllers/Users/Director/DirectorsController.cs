@@ -37,15 +37,26 @@ public class DirectorsController : ControllerBase
                 Message = "Please, provide a valid company code."
             });
 
+        Guid directorId = Guid.NewGuid();
+
         var newDirector = new SalestackDirector
         {
-            Id = Guid.NewGuid(),
+            Id = directorId,
             Name = data.Name,
-            Email = data.Email,
             PhoneNumber = data.PhoneNumber,
             Occupation = CompanyOccupation.Director,
-            CompanyId = companyId
+            CompanyId = companyId,
+            Hierarchy = UserHierarchy.Director,
+            Authentication = new Authentication
+            {
+                Email = data.Authentication.Email,
+                Password = data.Authentication.Password,
+                Occupation = CompanyOccupation.Director,
+                UserId = directorId
+            }
         };
+
+        companyForDirectorCreateOperation.DirectorId = directorId;
 
         await _context.Director.AddAsync(newDirector);
 
@@ -101,7 +112,6 @@ public class DirectorsController : ControllerBase
             });
 
         selectedDirector.Name = data.Name;
-        selectedDirector.Email = data.Email;
         selectedDirector.PhoneNumber = data.PhoneNumber;
 
         await _context.SaveChangesAsync();

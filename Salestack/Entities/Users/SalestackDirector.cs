@@ -10,10 +10,10 @@ public class SalestackDirector : SalestackBaseUser
     public SalestackDirector(
     Guid id,
     string name,
-    string email,
     string phoneNumber,
     CompanyOccupation occupation,
-    Guid companyId) : base(id, name, email, phoneNumber, occupation)
+    Guid companyId,
+    Authentication authentication) : base(id, name, phoneNumber, occupation, authentication)
     {
         CompanyId = companyId;
     }

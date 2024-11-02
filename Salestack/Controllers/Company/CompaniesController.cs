@@ -37,10 +37,16 @@ public class CompaniesController : ControllerBase
             {
                 Id = directorId,
                 Name = data.Director.Name,
-                Email = data.Director.Email,
                 PhoneNumber = data.Director.PhoneNumber,
                 Occupation = CompanyOccupation.Director,
                 CompanyId = companyId,
+                Authentication = new Authentication
+                {
+                    Email = data.Director.Authentication.Email,
+                    Password = data.Director.Authentication.Password,
+                    Occupation = CompanyOccupation.Director,
+                    UserId = directorId
+                },
             }
         };
 
@@ -57,7 +63,8 @@ public class CompaniesController : ControllerBase
     {
         var companies = await _context.Company
             .AsNoTracking()
-            .Include(c => c.Director).ToListAsync();
+            .Include(c => c.Director)
+            .ToListAsync();
 
         return Ok(companies);
     }
@@ -68,10 +75,7 @@ public class CompaniesController : ControllerBase
     {
         var selectedCompany = await _context.Company
             .AsNoTracking()
-            .Include(c => c.Director)
-            .Include(c => c.Managers)
-            .Include(c => c.Teams)
-            .Include(c => c.Sellers)
+            .IgnoreAutoIncludes()
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (selectedCompany == null)
@@ -87,7 +91,9 @@ public class CompaniesController : ControllerBase
     [HttpPatch("{id}/companyCode={companyCode}")]
     public async Task<IActionResult> UpdateCompanyAsync(Guid id, SalestackCompany data, string companyCode)
     {
-        var selectedCompanyForUpdateOperation = await _context.Company.FindAsync(id);
+        var selectedCompanyForUpdateOperation = await _context.Company
+            .Include(c => c.Director)
+            .FirstOrDefaultAsync(c => c.Id == id);
 
         if (selectedCompanyForUpdateOperation == null)
             return NotFound(new
@@ -105,7 +111,6 @@ public class CompaniesController : ControllerBase
 
         selectedCompanyForUpdateOperation.Name = data.Name;
         selectedCompanyForUpdateOperation.Cnpj = data.Cnpj;
-        selectedCompanyForUpdateOperation.CompanyCode = data.CompanyCode;
         selectedCompanyForUpdateOperation.PhoneNumber = data.PhoneNumber;
 
         await _context.SaveChangesAsync();

@@ -10,9 +10,12 @@ public class SalestackManager : SalestackBaseUser
     public SalestackManager(
     Guid id,
     string name,
-    string email,
     string phoneNumber,
-    CompanyOccupation occupation) : base(id, name, email, phoneNumber, occupation) { }
+    CompanyOccupation occupation,
+    Authentication authentication) : base(id, name, phoneNumber, occupation, authentication)
+    {
+
+    }
 
     [Required(ErrorMessage = "You must provide a valid VerificationCode."),
      Length(minimumLength: 8, maximumLength: 20)]

@@ -1,4 +1,6 @@
-﻿using Salestack.Entities.Teams;
+﻿using Salestack.Entities.Customers;
+using Salestack.Entities.SaleTargets;
+using Salestack.Entities.Teams;
 using Salestack.Entities.Users;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -23,14 +25,21 @@ namespace Salestack.Entities.Company
         public string PhoneNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Please provide the data of the company director."), DefaultValue(typeof(SalestackDirector))]
-        public SalestackDirector Director { get; set; } = null!;
+        public SalestackDirector Director { get; set; }
 
         public Guid? DirectorId { get; set; }
 
         public List<SalestackManager> Managers { get; set; } = [];
 
+        public List<SalestackTeam> Teams { get; set; } = [];
+
         public List<SalestackSeller> Sellers { get; set; } = [];
 
-        public List<SalestackTeam> Teams { get; set; } = [];
+        public List<SalestackProduct> Products { get; set; } = [];
+
+        public List<SalestackService> Services { get; set; } = [];
+
+        public List<SalestackCustomer> Customers { get; set; } = [];
+
     }
 }
