@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Salestack.Entities.Company;
 using Salestack.Entities.Customers;
+using Salestack.Entities.Joins;
+using Salestack.Entities.Sales;
 using Salestack.Entities.SaleTargets;
 using Salestack.Entities.Teams;
 using Salestack.Entities.Users;
@@ -43,6 +45,16 @@ namespace Salestack.Data.Context
             builder.Entity<SalestackManager>().HasOne(m => m.Authentication);
 
             builder.Entity<SalestackSeller>().HasOne(s => s.Authentication);
+
+            builder.Entity<SalestackCustomer>().HasMany(c => c.Budgets);
+
+            builder.Entity<SalestackBudget>().HasMany(c => c.Products);
+
+            builder.Entity<SalestackBudget>().HasMany(c => c.Services);
+
+            builder.Entity<SalestackBudgetProduct>().HasKey(bP => new { bP.BudgetId, bP.ProductId });
+
+            builder.Entity<SalestackBudgetService>().HasKey(bP => new { bP.BudgetId, bP.ServiceId });
         }
 
         public DbSet<SalestackCompany> Company { get; set; }
@@ -53,7 +65,11 @@ namespace Salestack.Data.Context
         public DbSet<SalestackTeam> Team { get; set; }
         public DbSet<SalestackProduct> Product { get; set; }
         public DbSet<SalestackService> Service { get; set; }
-        public DbSet<SalestackCustomer> Customer { get; set; }
         public DbSet<CustomerAddress> Address { get; set; }
+        public DbSet<SalestackCustomer> Customer { get; set; }
+        public DbSet<SalestackBudget> Budget { get; set; }
+        public DbSet<SalestackBudgetProduct> BudgetProduct { get; set; }
+        public DbSet<SalestackBudgetService> BudgetService { get; set; }
+        public DbSet<SalestackOrder> Order { get; set; }
     }
 }
