@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Salestack.Data.Context;
@@ -11,9 +12,11 @@ using Salestack.Data.Context;
 namespace Salestack.Data.Migrations
 {
     [DbContext(typeof(SalestackDbContext))]
-    partial class SalestackDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241103151914_AddingVisitTable")]
+    partial class AddingVisitTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -113,20 +116,20 @@ namespace Salestack.Data.Migrations
                     b.Property<TimeSpan>("Duration")
                         .HasColumnType("interval");
 
+                    b.Property<bool>("Finished")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("FinishedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("InProgress")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("StartedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
-
-                    b.Property<DateTime>("VisitDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 

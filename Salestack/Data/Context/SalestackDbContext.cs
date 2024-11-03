@@ -71,5 +71,6 @@ namespace Salestack.Data.Context
         public DbSet<SalestackBudgetProduct> BudgetProduct { get; set; }
         public DbSet<SalestackBudgetService> BudgetService { get; set; }
         public DbSet<SalestackOrder> Order { get; set; }
+        public DbSet<PresencialVisit> Visit { get; set; }
     }
 }
