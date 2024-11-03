@@ -9,15 +9,23 @@ services:
         - POSTGRES_PASSWORD=12345678
         - POSTGRES_DB=SalestackDb
 
+    volumes:
+        - db_vol:/var/lib/postgresql/pg_data
+
   salestack:
     container_name: salestack_api
     image: ${DOCKER_REGISTRY-}salestack
+    build:
+        context: .
+        dockerfile: Salestack/Dockerfile
     ports:
       - 5000:5000
       - 5001:5001
 
     develop:
-            watch:
-              - path: ./
-                action: sync+restart
-                target: ./app
+      watch:
+        - path: ./
+          action: rebuild
+
+volumes:
+  db_vol:
