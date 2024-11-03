@@ -6,4 +6,13 @@ public class SalestackSettings
     public string MigrationConnectionString { get; set; } = string.Empty;
     public string SecureKey { get; set; } = string.Empty;
 
+
+    public string GetConnectionString(bool returnDevConnectionString = false)
+    {
+        if (returnDevConnectionString)
+        {
+            return MigrationConnectionString;
+        }
+        return SalestackDbConnectionString;
+    }
 }

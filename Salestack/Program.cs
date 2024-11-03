@@ -14,7 +14,7 @@ if (builder.Environment.IsDevelopment())
 {
     var settings = builder.Configuration.GetSection("Salestack").Get<SalestackSettings>();
 
-    var connectionString = settings?.SalestackDbConnectionString;
+    var connectionString = settings?.GetConnectionString();
 
     builder.Services.AddDbContext<SalestackDbContext>(options =>
     {
