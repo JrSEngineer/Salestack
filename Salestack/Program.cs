@@ -35,8 +35,6 @@ if (builder.Environment.IsProduction())
 
 }
 
-builder.WebHost.UseUrls("http://[::]:8080");
-
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
